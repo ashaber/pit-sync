@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>PitSync — 9 to 5 @ JMR 2026</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #1c1c1e;
+      --surface2: #2c2c2e;
+      --border: #3a3a3c;
+      --text: #ffffff;
+      --text2: rgba(235,235,245,0.6);
+      --accent: #ff9f0a;
+      --green: #30d158;
+      --red: #ff453a;
+      --nav-h: 60px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    #app { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; }
+
+    /* ── Race Header / Clock ── */
+    #race-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .header-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .clock-row { display: flex; gap: 6px; }
+    .clock-item {
+      flex: 1;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .clock-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 3px;
+    }
+    .clock-value {
+      font-size: 18px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .cv-accent { color: var(--accent); }
+    .cv-green  { color: var(--green); }
+    .cv-red    { color: var(--red); }
+
+    /* ── Tab Panels ── */
+    .tab-panel {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
+    }
+    .tab-panel.active { display: block; }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 20;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text2);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+    .nav-btn.active { color: var(--accent); }
+    .nav-btn svg { width: 22px; height: 22px; }
+
+    /* ── Laps Tab ── */
+    .laps-hero { padding: 14px 14px 0; }
+
+    #log-lap-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 20px;
+      cursor: pointer;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: block;
+    }
+    #log-lap-btn:active { opacity: 0.82; }
+
+    /* Lap Form */
+    #lap-form-container {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .form-section { margin-bottom: 16px; }
+    .form-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+
+    .signal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .signal-btn {
+      background: var(--surface2);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 13px 4px;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .signal-btn.selected {
+      border-color: var(--accent);
+      background: rgba(255,159,10,0.14);
+      color: var(--accent);
+    }
+    .signal-btn:active { opacity: 0.7; }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .check-opt {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 11px 12px;
+      cursor: pointer;
+      user-select: none;
+      border: 2px solid transparent;
+    }
+    .check-opt.checked { border-color: var(--green); background: rgba(48,209,88,0.1); }
+    .check-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .check-opt.checked .check-box {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .check-opt.checked .check-box::after {
+      content: '';
+      width: 10px;
+      height: 6px;
+      border-left: 2.5px solid #000;
+      border-bottom: 2.5px solid #000;
+      transform: rotate(-45deg) translateY(-1px);
+      display: block;
+    }
+    .check-opt-label { font-size: 13px; font-weight: 500; line-height: 1.2; }
+
+    .time-adjust-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .time-captured {
+      flex: 1;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      color: var(--accent);
+    }
+    .adj-btn {
+      background: var(--surface2);
+      border: none;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 24px;
+      font-weight: 600;
+      width: 52px;
+      height: 52px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .adj-btn:active { background: var(--border); }
+
+    .notes-input {
+      width: 100%;
+      background: var(--surface2);
+      border: none;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      padding: 12px 14px;
+      font-family: inherit;
+      resize: none;
+      min-height: 64px;
+    }
+    .notes-input::placeholder { color: var(--text2); }
+    .notes-input:focus { outline: none; }
+
+    .form-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .btn-save {
+      flex: 1;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 800;
+      padding: 15px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .btn-save:active { opacity: 0.85; }
+    .btn-cancel {
+      background: var(--surface2);
+      color: var(--text);
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 15px 20px;
+      cursor: pointer;
+    }
+
+    /* Summary stats */
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 0 14px 12px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+    .stat-val { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
+    .stat-lbl { font-size: 9px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+    /* Lap history */
+    .lap-history { padding: 0 14px; }
+    .lap-history-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .lap-row {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .lap-num {
+      background: var(--accent);
+      color: #000;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .lap-details { flex: 1; min-width: 0; }
+    .lap-time-row { display: flex; align-items: baseline; gap: 8px; }
+    .lap-time { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .lap-signal { font-size: 13px; font-weight: 800; color: var(--accent); letter-spacing: 0.04em; }
+    .lap-meta { font-size: 12px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+    .lap-notes-text { font-size: 13px; color: var(--text); margin-top: 4px; }
+    .lap-delete {
+      background: none;
+      border: none;
+      color: var(--red);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    .lap-delete:active { opacity: 1; }
+    .no-laps {
+      color: var(--text2);
+      font-size: 14px;
+      text-align: center;
+      padding: 40px 16px;
+      line-height: 1.6;
+    }
+
+    /* ── Checklist Tab ── */
+    .checklist-header {
+      padding: 14px 14px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .checklist-progress { font-size: 14px; color: var(--text2); }
+    .checklist-progress strong { color: var(--accent); }
+    .btn-reset {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 8px;
+      font-size: 12px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .checklist-section { padding: 0 12px 6px; }
+    .section-header {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 12px 4px 7px;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border-radius: 10px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checklist-item.done { opacity: 0.45; }
+    .cl-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .checklist-item.done .cl-check {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .checklist-item.done .cl-check::after {
+      content: '';
+      width: 10px;
+      height: 6px;
+      border-left: 2.5px solid #000;
+      border-bottom: 2.5px solid #000;
+      transform: rotate(-45deg) translateY(-1px);
+      display: block;
+    }
+    .cl-text { font-size: 14px; line-height: 1.4; flex: 1; }
+
+    /* ── Pacing Tab ── */
+    .pacing-content { padding: 12px 12px 0; }
+    .pace-card {
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 14px 14px 10px;
+      margin-bottom: 10px;
+    }
+    .pace-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 10px;
+    }
+    .signal-ref-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 9px 12px;
+      margin-bottom: 5px;
+    }
+    .signal-word {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      width: 72px;
+      flex-shrink: 0;
+      letter-spacing: 0.04em;
+      padding-top: 1px;
+    }
+    .signal-action { font-size: 13px; line-height: 1.35; }
+    .pace-table { width: 100%; border-collapse: collapse; }
+    .pace-table th {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 6px 8px;
+      text-align: left;
+    }
+    .pace-table td {
+      font-size: 13px;
+      padding: 7px 6px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.35;
+    }
+    .pace-table td:first-child { color: var(--text2); }
+    .nutr-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .nutr-row:last-child { border-bottom: none; }
+    .nutr-cond { font-size: 13px; color: var(--text2); flex: 1; }
+    .nutr-action { font-size: 13px; font-weight: 600; text-align: right; }
+    .pace-note { font-size: 12px; color: var(--text2); margin-top: 8px; font-style: italic; }
+    .pace-callout { font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 8px; }
+    .pit-rule {
+      font-size: 13px;
+      line-height: 1.4;
+      padding: 9px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+
+    /* ── Static Content (Plan, Bible) ── */
+    .static-content { padding: 16px; }
+    .static-content h1 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .static-content .subtitle { font-size: 13px; color: var(--text2); margin-bottom: 16px; }
+    .static-content h2 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 20px 0 8px;
+    }
+    .static-content p { font-size: 14px; color: var(--text2); line-height: 1.5; margin-bottom: 8px; }
+    .static-content ul, .static-content ol { padding-left: 20px; margin-bottom: 10px; }
+    .static-content li { font-size: 14px; line-height: 1.6; margin-bottom: 2px; }
+    .static-content blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 8px 14px;
+      margin: 10px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      background: rgba(255,159,10,0.07);
+      border-radius: 0 8px 8px 0;
+    }
+    .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 13px; }
+    .data-table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); line-height: 1.4; vertical-align: top; }
+    .data-table td:first-child { color: var(--text2); white-space: nowrap; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .warn-box {
+      background: rgba(255,159,10,0.1);
+      border: 1px solid rgba(255,159,10,0.3);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 10px 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Race Header / Clock ── -->
+  <header id="race-header">
+    <div class="header-title">PitSync — 9 to 5 @ JMR 2026</div>
+    <div class="clock-row">
+      <div class="clock-item">
+        <div class="clock-label">Elapsed</div>
+        <div class="clock-value cv-accent" id="elapsed-display">—</div>
+      </div>
+      <div class="clock-item">
+        <div class="clock-label">Remaining</div>
+        <div class="clock-value" id="remaining-display">—</div>
+      </div>
+      <div class="clock-item">
+        <div class="clock-label">This Lap</div>
+        <div class="clock-value cv-green" id="lap-display">—</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════ LAPS TAB ══════════════════════════════ -->
+  <div class="tab-panel active" id="panel-laps">
+    <div class="laps-hero">
+
+      <button id="log-lap-btn" onclick="openLapForm()">+ Log Lap</button>
+
+      <div id="lap-form-container" class="hidden">
+
+        <div class="form-section">
+          <div class="form-section-title">Signal (Andrew's call)</div>
+          <div class="signal-grid">
+            <button class="signal-btn" data-signal="GOOD"    onclick="selectSignal(this)">GOOD</button>
+            <button class="signal-btn" data-signal="ADJUST"  onclick="selectSignal(this)">ADJUST</button>
+            <button class="signal-btn" data-signal="WATER"   onclick="selectSignal(this)">WATER</button>
+            <button class="signal-btn" data-signal="LAYERS"  onclick="selectSignal(this)">LAYERS</button>
+            <button class="signal-btn" data-signal="BATTERY" onclick="selectSignal(this)">BATTERY</button>
+            <button class="signal-btn" data-signal="MECH"    onclick="selectSignal(this)">MECH</button>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Given</div>
+          <div class="checkbox-grid" id="given-grid">
+            <label class="check-opt" data-id="large2"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Large 2sc</span></label>
+            <label class="check-opt" data-id="large3"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Large 3sc</span></label>
+            <label class="check-opt" data-id="small"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Small bottle</span></label>
+            <label class="check-opt" data-id="water"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Plain water</span></label>
+            <label class="check-opt" data-id="gel"      onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Gel</span></label>
+            <label class="check-opt" data-id="gel-caff" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Gel (caff)</span></label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Returned</div>
+          <div class="checkbox-grid" id="returned-grid">
+            <label class="check-opt" data-id="lg-empty"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Large empty</span></label>
+            <label class="check-opt" data-id="lg-partial" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Large partial</span></label>
+            <label class="check-opt" data-id="sm-empty"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Small empty</span></label>
+            <label class="check-opt" data-id="sm-partial" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Small partial</span></label>
+            <label class="check-opt" data-id="kept"       onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Kept on bike</span></label>
+            <label class="check-opt" data-id="nothing"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Nothing back</span></label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Lap Time <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">— tap ± to correct if logged late</span></div>
+          <div class="time-adjust-row">
+            <button class="adj-btn" onclick="adjustTime(-1)">−</button>
+            <div class="time-captured" id="time-captured-display">0:00</div>
+            <button class="adj-btn" onclick="adjustTime(+1)">+</button>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Notes</div>
+          <textarea class="notes-input" id="lap-notes" placeholder="Condition, mechanical, anything notable..." rows="2"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="closeLapForm()">Cancel</button>
+          <button class="btn-save" onclick="saveLap()">Save Lap</button>
+        </div>
+
+      </div><!-- /lap-form-container -->
+    </div><!-- /laps-hero -->
+
+    <div class="summary-stats hidden" id="summary-stats">
+      <div class="stat-box"><div class="stat-val" id="stat-laps">0</div><div class="stat-lbl">Laps</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-avg">—</div><div class="stat-lbl">Avg min</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-best">—</div><div class="stat-lbl">Best</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-gels">0</div><div class="stat-lbl">Gels</div></div>
+    </div>
+
+    <div class="lap-history" id="lap-history">
+      <div class="no-laps">No laps logged yet.<br>Race starts 9:00am June 13.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ CHECKLIST TAB ══════════════════════════════ -->
+  <div class="tab-panel" id="panel-checklist">
+    <div class="checklist-header">
+      <div class="checklist-progress"><strong id="cl-done">0</strong> / <span id="cl-total">0</span> complete</div>
+      <button class="btn-reset" onclick="resetChecklist()">Reset all</button>
+    </div>
+    <div id="checklist-body"></div>
+  </div>
+
+  <!-- ══════════════════════════════ PACING TAB ══════════════════════════════ -->
+  <div class="tab-panel" id="panel-pacing">
+    <div class="pacing-content">
+
+      <div class="pace-card">
+        <div class="pace-card-title">Pit Signals</div>
+        <div class="signal-ref-row"><div class="signal-word">GOOD</div><div class="signal-action">Large 2sc + gel, send out</div></div>
+        <div class="signal-ref-row"><div class="signal-word">ADJUST</div><div class="signal-action">Large 2sc, no gel</div></div>
+        <div class="signal-ref-row"><div class="signal-word">WATER</div><div class="signal-action">Plain water only, no gel</div></div>
+        <div class="signal-ref-row"><div class="signal-word">LAYERS</div><div class="signal-action">Add/remove layer from kit bag</div></div>
+        <div class="signal-ref-row"><div class="signal-word">BATTERY</div><div class="signal-action">Swap AXS derailleur battery</div></div>
+        <div class="signal-ref-row"><div class="signal-word">MECH</div><div class="signal-action">Tools out</div></div>
+      </div>
+
+      <div class="pace-card">
+        <div class="pace-card-title">Pit Rules</div>
+        <div class="pit-rule">Target stop: <strong>under 90 seconds</strong> unless mechanical</div>
+        <div class="pit-rule">Next bottle ready before Andrew arrives</div>
+        <div class="pit-rule">Don't ask questions unless athlete initiates</div>
+        <div class="pit-rule">Renee may call back: <strong>Easy</strong> or <strong>Good</strong></div>
+        <div class="pit-rule">Debrief after lap 4 only if needed — silence is good</div>
+      </div>
+
+      <div class="pace-card">
+        <div class="pace-card-title">Lap Targets</div>
+        <table class="pace-table">
+          <thead><tr><th>Lap</th><th>Target</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Controlled</td><td>No holeshot — controlled from gun</td></tr>
+            <tr><td>2</td><td>65–70 min</td><td>Resist early surge</td></tr>
+            <tr><td>3–5</td><td>65–70 min</td><td>Race rhythm, protect these</td></tr>
+            <tr><td>6–7</td><td>68–75 min</td><td>Accept fade, HR leads</td></tr>
+            <tr><td>8</td><td>Everything</td><td>Negative split goal</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pace-card">
+        <div class="pace-card-title">Nutrition Protocol</div>
+        <div class="nutr-row"><span class="nutr-cond">Normal</span><span class="nutr-action">Large 2sc + gel</span></div>
+        <div class="nutr-row"><span class="nutr-cond">Gut warning</span><span class="nutr-action">Large 2sc, no gel</span></div>
+        <div class="nutr-row"><span class="nutr-cond">Gut distress</span><span class="nutr-action">Plain water, no gel</span></div>
+        <div class="nutr-row"><span class="nutr-cond">Recovery lap</span><span class="nutr-action">Resume normal</span></div>
+        <div class="nutr-row"><span class="nutr-cond" style="color:var(--accent);font-weight:700">Caff gels</span><span class="nutr-action" style="color:var(--accent)">Max 3 — laps 5–7 only</span></div>
+      </div>
+
+      <div class="pace-card">
+        <div class="pace-card-title">Power &amp; HR Zones</div>
+        <table class="pace-table">
+          <thead><tr><th>Terrain</th><th>Power</th><th>HR</th></tr></thead>
+          <tbody>
+            <tr><td>Sustained climb</td><td>205–220W</td><td>Z3, cap Z3.9</td></tr>
+            <tr><td>Punchy steep</td><td>≤270W</td><td>Z4 briefly</td></tr>
+            <tr><td>Flat / rolling</td><td>150–170W</td><td>Z2.5–Z3</td></tr>
+            <tr><td>Descent / Vandelay</td><td>Soft pedal</td><td>Z2 or below</td></tr>
+          </tbody>
+        </table>
+        <div class="pace-note">FTP 277W | LTHR 172bpm | Garmin: 3s power / lap avg / HR zone / lap timer</div>
+      </div>
+
+      <div class="pace-card">
+        <div class="pace-card-title">Layers Protocol</div>
+        <table class="pace-table">
+          <thead><tr><th>Item</th><th>Deploy When</th></tr></thead>
+          <tbody>
+            <tr><td>Wind vest</td><td>Temperature drops, pre-storm sky</td></tr>
+            <tr><td>Arm warmers</td><td>Sustained cloud cover, cold descents</td></tr>
+            <tr><td>Rain jacket</td><td>Rain starting or imminent</td></tr>
+            <tr><td>Light gloves</td><td>Hands losing feel on descents</td></tr>
+          </tbody>
+        </table>
+        <div class="pace-callout">Put layers on one lap early. Remove one lap early. Don't wait until cold.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ RACE PLAN TAB ══════════════════════════════ -->
+  <div class="tab-panel" id="panel-plan">
+    <div class="static-content">
+      <h1>Race Plan — 9 to 5 @ JMR 2026</h1>
+      <p class="subtitle">June 13, 2026 | 9:00am – 5:00pm | Solo 50+ | Lost River</p>
+
+      <h2>Athlete Profile</h2>
+      <table class="data-table">
+        <tr><td>FTP</td><td>277W</td></tr>
+        <tr><td>LTHR</td><td>172bpm</td></tr>
+        <tr><td>Weight</td><td>160lbs</td></tr>
+        <tr><td>Bike</td><td>Trek Top Fuel 9.9 Gen 4</td></tr>
+        <tr><td>Drivetrain</td><td>SRAM XO Transmission</td></tr>
+        <tr><td>Power Meter</td><td>Quarq (crank)</td></tr>
+        <tr><td>Head Unit</td><td>Garmin 540</td></tr>
+      </table>
+
+      <h2>Course</h2>
+      <table class="data-table">
+        <tr><td>Distance</td><td>9.64 miles/lap</td></tr>
+        <tr><td>Climbing</td><td>1,369ft/lap</td></tr>
+        <tr><td>Elevation</td><td>5,091–5,663ft</td></tr>
+      </table>
+      <p>Key feature: <strong>Vandelay trail</strong> at end of lap — tight technical turns, new in 2026. Rides easy fresh, consequential when fatigued. Lap must finish before 5:00pm.</p>
+
+      <h2>Saturday Schedule</h2>
+      <table class="data-table">
+        <tr><td>6:00am</td><td>Wake up</td></tr>
+        <tr><td>6:30am</td><td>Breakfast burrito (4 eggs, meat, rice, 2 tortillas)</td></tr>
+        <tr><td>7:15am</td><td>Depart Donnelly</td></tr>
+        <tr><td>7:45am</td><td>Arrive JMR — final pit setup</td></tr>
+        <tr><td>8:00–8:45</td><td>Warmup: easy spin, 2–3 × 30sec openers ~220W</td></tr>
+        <tr><td>8:50am</td><td>Stage</td></tr>
+        <tr><td>9:00am</td><td>Race start (no LeMans run)</td></tr>
+        <tr><td>5:00pm</td><td>Race end — all laps completed by 5pm count</td></tr>
+        <tr><td>5:30pm</td><td>Podium + raffle + dinner</td></tr>
+      </table>
+
+      <h2>Target: 8 Laps</h2>
+      <table class="data-table">
+        <thead><tr><th>Lap</th><th>Target</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Controlled</td><td>No holeshot — controlled from gun</td></tr>
+          <tr><td>2</td><td>65–70 min</td><td>Resist early surge</td></tr>
+          <tr><td>3–5</td><td>65–70 min</td><td>Race rhythm, protect these laps</td></tr>
+          <tr><td>6–7</td><td>68–75 min</td><td>Accept fade, HR leads over power</td></tr>
+          <tr><td>8</td><td>Everything</td><td>Negative split goal</td></tr>
+        </tbody>
+      </table>
+
+      <h2>The One Pacing Rule</h2>
+      <blockquote>Never start a climb already in Z3.5. Come into climbs recovered.</blockquote>
+
+      <h2>Pacing by Terrain</h2>
+      <table class="data-table">
+        <thead><tr><th>Terrain</th><th>Power</th><th>HR Zone</th></tr></thead>
+        <tbody>
+          <tr><td>Sustained climb</td><td>205–220W</td><td>Z3, cap Z3.9</td></tr>
+          <tr><td>Punchy steep</td><td>≤270W</td><td>Z4 briefly</td></tr>
+          <tr><td>Flat / rolling</td><td>150–170W</td><td>Z2.5–Z3</td></tr>
+          <tr><td>Descent / Vandelay</td><td>Soft pedal</td><td>Z2 or below</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Warning Signs</h2>
+      <ul>
+        <li>Z4 on sustained climb before lap 5 → back off immediately</li>
+        <li>HR not returning below Z3 within 90 sec after punch → ease next section</li>
+        <li>Z3.5 on flat terrain → back off</li>
+        <li>Still Z3 on descent → something is wrong upstream</li>
+      </ul>
+
+      <h2>Nutrition Protocol</h2>
+      <table class="data-table">
+        <thead><tr><th>Condition</th><th>Bottle</th><th>Gel</th></tr></thead>
+        <tbody>
+          <tr><td>Normal</td><td>Large 2sc</td><td>Yes</td></tr>
+          <tr><td>Gut warning</td><td>Large 2sc</td><td>No</td></tr>
+          <tr><td>Gut distress</td><td>Plain water</td><td>No</td></tr>
+          <tr><td>Recovery lap</td><td>Large 2sc</td><td>Yes</td></tr>
+        </tbody>
+      </table>
+      <p>Caffeine gels: max 3 total — laps 5–7 only. Act early at first gut signal. Plain water lap resets GI. Pass gas = resolved, resume normal next lap.</p>
+
+      <h2>Layers Protocol</h2>
+      <div class="warn-box"><strong>Lesson from 2025:</strong> You froze when snow hit lap 5. Put layers on one lap early. Remove one lap early. Don't wait until cold.</div>
+      <table class="data-table">
+        <thead><tr><th>Item</th><th>Deploy When</th></tr></thead>
+        <tbody>
+          <tr><td>Wind vest</td><td>Temperature drops, pre-storm sky</td></tr>
+          <tr><td>Arm warmers</td><td>Sustained cloud cover, cold descents</td></tr>
+          <tr><td>Rain jacket</td><td>Rain starting or imminent</td></tr>
+          <tr><td>Light gloves</td><td>Hands losing feel on descents</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Key Reminders</h2>
+      <ol>
+        <li>Lap 2 — controlled start, no holeshot unless the steep climb chaos is real</li>
+        <li>Vandelay — scout Friday evening, descent is recovery not a time trial</li>
+        <li>Gut signal — act at first sign, plain water, reset</li>
+        <li>Layers — one lap early beats freezing for three laps</li>
+        <li>Lap 8 — everything left, negative split is the goal</li>
+        <li>Pit time — under 90 seconds. Renee runs the pit, trust her.</li>
+      </ol>
+
+      <h2>Bike Setup</h2>
+      <table class="data-table">
+        <tr><td>Front tire</td><td>Vittoria Barzo 29x2.4 TLR — 16psi</td></tr>
+        <tr><td>Rear tire</td><td>Vittoria Mezcal 29x2.4 TLR — 18psi</td></tr>
+        <tr><td>Fork</td><td>RockShox Pike Ultimate 130mm</td></tr>
+        <tr><td>Shock</td><td>RockShox Deluxe Ultimate</td></tr>
+        <tr><td>Drivetrain</td><td>SRAM XO Transmission</td></tr>
+        <tr><td>Brakes</td><td>SRAM Level — MTX ceramic pads</td></tr>
+        <tr><td>Chain</td><td>XO Flattop (new June 2026)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ RACE BIBLE TAB ══════════════════════════════ -->
+  <div class="tab-panel" id="panel-bible">
+    <div class="static-content">
+      <h1>Race Bible — 9 to 5 @ JMR</h1>
+      <p class="subtitle">June 13, 2026 | Jug Mountain Ranch, McCall ID | Twisted Turtle Racing</p>
+
+      <h2>The Race</h2>
+      <p>Lap format endurance race. Course ~9–10 miles. Start 9:00am sharp. All laps completed by 5:00pm count.</p>
+      <p>2026 course includes the lower portion of <strong>Vandelay trail</strong> — adds tight and sometimes technical turns, additional distance and climbing vs. 2025.</p>
+
+      <h2>Registration</h2>
+      <table class="data-table">
+        <tr><td>Site</td><td>Zone4.ca</td></tr>
+        <tr><td>Confirmation</td><td>#7174873</td></tr>
+        <tr><td>Contact</td><td>alex01phipps@gmail.com</td></tr>
+        <tr><td>Strava Route</td><td>3495145143887255900</td></tr>
+      </table>
+
+      <h2>Venue &amp; Parking</h2>
+      <ul>
+        <li>Start/finish at trailhead parking lot (returning for 2026)</li>
+        <li><strong>No trailers on site</strong></li>
+        <li>Camping limited to upper parking lot only</li>
+        <li>No campfires</li>
+        <li>All trails closed to public 7:00am – 5:00pm</li>
+      </ul>
+
+      <h2>Pit Zone</h2>
+      <ul>
+        <li>Pit zone is on course at start/finish area</li>
+        <li>Shade structure must be self-provided (no venue canopy)</li>
+      </ul>
+
+      <h2>Packet Pickup</h2>
+      <table class="data-table">
+        <tr><td>Friday June 12</td><td>5:00pm to dark</td></tr>
+        <tr><td>Saturday June 13</td><td>Race morning</td></tr>
+      </table>
+
+      <h2>Post-Race</h2>
+      <ul>
+        <li>Raffle and podium at <strong>5:30pm</strong> at start/finish</li>
+        <li>Dinner on site — registered before June 7 ✓ — Renee included</li>
+        <li>Food trucks during race (depart ~8pm)</li>
+      </ul>
+
+      <h2>Course Details</h2>
+      <table class="data-table">
+        <tr><td>Distance/lap</td><td>9.64 miles</td></tr>
+        <tr><td>Climbing/lap</td><td>1,369ft</td></tr>
+        <tr><td>Min elevation</td><td>5,091ft</td></tr>
+        <tr><td>Max elevation</td><td>5,663ft</td></tr>
+        <tr><td>Range</td><td>572ft</td></tr>
+      </table>
+
+      <h2>Course Profile</h2>
+      <table class="data-table">
+        <thead><tr><th>Miles</th><th>Feature</th></tr></thead>
+        <tbody>
+          <tr><td>0–1</td><td>Hard climb out of start, gain ~260ft</td></tr>
+          <tr><td>1–3</td><td>Sustained high plateau ~5,590ft — find rhythm here</td></tr>
+          <tr><td>3.9–4.8</td><td>Course crux — peak at 5,663ft, sharp descent</td></tr>
+          <tr><td>5–6</td><td>Recovery descent then climb back to 5,600ft</td></tr>
+          <tr><td>6.7–7.7</td><td>Significant descent ~485ft</td></tr>
+          <tr><td>7.7–9.6</td><td>Vandelay — tight turns, gradual return to start</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Vandelay (new 2026)</h2>
+      <p>Added to end of lap. Tight and sometimes technical. Rides easy fresh — demanding when fatigued at race pace. Scout Friday evening. Descent into finish is recovery, not a time trial.</p>
+
+      <h2>Categories</h2>
+      <ul>
+        <li>Solo</li>
+        <li>Duo — Male, Female, Co-Ed</li>
+        <li>Trio — Open</li>
+      </ul>
+
+      <h2>Prior Results</h2>
+      <ul>
+        <li>2025: zone4.ca/race/2025-06-21/ea9b0274/results</li>
+        <li>2024: zone4.ca/race/2024-06-22/733eb954/results</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Bottom Nav ── -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-laps" onclick="showTab('laps')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Laps
+    </button>
+    <button class="nav-btn" id="nav-checklist" onclick="showTab('checklist')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Check
+    </button>
+    <button class="nav-btn" id="nav-pacing" onclick="showTab('pacing')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Pace
+    </button>
+    <button class="nav-btn" id="nav-plan" onclick="showTab('plan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Plan
+    </button>
+    <button class="nav-btn" id="nav-bible" onclick="showTab('bible')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      Bible
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<script>
+  const RACE_START = new Date('2026-06-13T09:00:00');
+  const RACE_END   = new Date('2026-06-13T17:00:00');
+  const LS_LAPS  = '9to5_2026_laps';
+  const LS_CL    = '9to5_2026_checklist';
+  const LS_LAPST = '9to5_2026_lapstart';
+
+  let laps          = JSON.parse(localStorage.getItem(LS_LAPS) || '[]');
+  let clState       = JSON.parse(localStorage.getItem(LS_CL)   || 'null');
+  let lapFormOpen   = false;
+  let capturedLapMs = 0;
+  let timeAdjustMin = 0;
+
+  const CHECKLIST = [
+    { id: 'trailer', title: 'Trailer Prep', items: [
+      { id: 'tr1',  text: 'Place mats', def: true },
+      { id: 'tr2',  text: 'Water heater (dewinterized + troubleshot)', def: true },
+      { id: 'tr3',  text: 'Refrigerator working', def: true },
+      { id: 'tr4',  text: 'Oil, salt, pan, spatula', def: true },
+      { id: 'tr5',  text: 'Eggs, tortillas', def: true },
+      { id: 'tr6',  text: 'Tire pressure checked' },
+      { id: 'tr7',  text: 'Propane checked' },
+      { id: 'tr8',  text: 'Organize hose' },
+      { id: 'tr9',  text: 'Water jugs filled' },
+      { id: 'tr10', text: 'Short work list completed' },
+    ]},
+    { id: 'bike_done', title: 'Bike — Already Done', items: [
+      { id: 'bd1',  text: 'New chain installed (SRAM XO Flattop)', def: true },
+      { id: 'bd2',  text: 'MTX ceramic brake pads — front and rear (1 ride)', def: true },
+      { id: 'bd3',  text: 'Barzo 29x2.4 TLR mounted front — sealant fresh', def: true },
+      { id: 'bd4',  text: 'Mezcal 29x2.4 TLR mounted rear', def: true },
+      { id: 'bd5',  text: 'Tire pressure set: Barzo 16psi / Mezcal 18psi', def: true },
+      { id: 'bd6',  text: 'Fork sag set — Pike Ultimate 130mm (63psi → 62psi)', def: true },
+      { id: 'bd7',  text: 'Rear shock set — Deluxe Ultimate (153psi)', def: true },
+      { id: 'bd8',  text: 'All bolts retorqued to spec', def: true },
+      { id: 'bd9',  text: 'Drivetrain clean — shifting best it\'s been', def: true },
+      { id: 'bd10', text: 'Dropper post lubed', def: true },
+      { id: 'bd11', text: 'Freehub lubed (Dumond Tech)', def: true },
+      { id: 'bd12', text: 'Deep clean after Sun Valley mud ride', def: true },
+    ]},
+    { id: 'bike_week', title: 'Bike — This Week', items: [
+      { id: 'bw1',  text: 'Mechanic visit — chainstay guard secured, brake cable shortened' },
+      { id: 'bw2',  text: 'Confirm brake bed-in ride post-mechanic (minimum 1)' },
+      { id: 'bw3',  text: 'Minimum 2 more rides on Barzo before race day' },
+      { id: 'bw4',  text: 'AXS derailleur battery — full charge confirmed race morning' },
+      { id: 'bw5',  text: 'AXS spare battery — fully charged, staged with Renee' },
+      { id: 'bw6',  text: 'Check AXS firmware current on all components (AXS app)' },
+      { id: 'bw7',  text: 'Garmin 540 — screen layout confirmed (3s power / lap avg / HR zone / lap timer)' },
+      { id: 'bw8',  text: 'Garmin 540 — 2026 course GPX loaded' },
+      { id: 'bw9',  text: 'Garmin 540 — auto-lap GPS trigger set at start/finish coordinate' },
+      { id: 'bw10', text: 'Wash bike before loading' },
+    ]},
+    { id: 'gear', title: 'Gear', items: [
+      { id: 'g1',  text: 'Lost River race kit' },
+      { id: 'g2',  text: 'Helmet' },
+      { id: 'g3',  text: 'Gloves' },
+      { id: 'g4',  text: 'Shoes + socks' },
+      { id: 'g5',  text: 'Sunglasses — clear lens staged for evening laps' },
+      { id: 'g6',  text: 'HRM strap' },
+      { id: 'g7',  text: 'Chamois cream (apply race morning)' },
+      { id: 'g8',  text: 'Sunscreen (apply race morning)' },
+      { id: 'g9',  text: 'Training kits' },
+      { id: 'g10', text: 'Training tires (on training wheels)' },
+      { id: 'g11', text: 'Waist pack if needed' },
+    ]},
+    { id: 'layers', title: 'Layer Kit (staged with Renee)', items: [
+      { id: 'l1', text: 'Wind vest' },
+      { id: 'l2', text: 'Arm warmers' },
+      { id: 'l3', text: 'Rain jacket' },
+      { id: 'l4', text: 'Light gloves' },
+      { id: 'l5', text: 'Emergency base layer' },
+    ]},
+    { id: 'pitbag', title: 'Mechanical / Pit Bag (Renee)', items: [
+      { id: 'pb1', text: 'Spare tubes x2' },
+      { id: 'pb2', text: 'Tubeless plug kit' },
+      { id: 'pb3', text: 'Sealant top-up bottle' },
+      { id: 'pb4', text: 'CO2 x3 + inflator' },
+      { id: 'pb5', text: 'SRAM Flattop quick links x2' },
+      { id: 'pb6', text: 'Multi-tool' },
+      { id: 'pb7', text: 'AXS spare battery (fully charged)' },
+      { id: 'pb8', text: 'Spare MTX brake pads' },
+      { id: 'pb9', text: 'Tire levers x2' },
+    ]},
+    { id: 'onbike', title: 'On-Bike Kit', items: [
+      { id: 'ob1', text: 'Tubeless plugs' },
+      { id: 'ob2', text: 'CO2 x1' },
+      { id: 'ob3', text: 'Multi-tool' },
+      { id: 'ob4', text: 'Quick link x1' },
+    ]},
+    { id: 'nutrition', title: 'Nutrition', items: [
+      { id: 'n1', text: 'Formula 369 — enough for 10+ large bottles (2 scoops each)' },
+      { id: 'n2', text: 'Maurten gels — 8 regular + 3 caffeine (separate caffeine gels)' },
+      { id: 'n3', text: 'Plain water bottles x2 staged at pit' },
+      { id: 'n4', text: 'Post-race recovery nutrition staged' },
+      { id: 'n5', text: 'Race morning snack for drive if needed' },
+    ]},
+    { id: 'renee_fri', title: 'Renee — Friday Night at Donnelly', items: [
+      { id: 'rf1', text: 'Pre-mix all Formula 369 bottles — label Large-2sc / Water' },
+      { id: 'rf2', text: 'Separate and label caffeine gels (max 3, laps 5–7)' },
+      { id: 'rf3', text: 'Inventory layer kit — confirm all items present' },
+      { id: 'rf4', text: 'Confirm pit bag contents against mechanical list' },
+      { id: 'rf5', text: 'Charge Garmin 540 fully' },
+      { id: 'rf6', text: 'Charge AXS spare battery fully' },
+      { id: 'rf7', text: 'Breakfast prep ready for 6:30am (burrito ingredients)' },
+      { id: 'rf8', text: 'Review PitSync app and signal vocabulary with Andrew' },
+      { id: 'rf9', text: 'Review one-word signals: GOOD / ADJUST / WATER / LAYERS / BATTERY / MECH' },
+    ]},
+    { id: 'food', title: 'Food — Carb Load', items: [
+      { id: 'f1', text: 'Mon–Wed: Normal clean food, stay well hydrated' },
+      { id: 'f2', text: 'Thu–Fri: Increase carbs at every meal (rice, pasta, potatoes, bread)' },
+      { id: 'f3', text: 'Thu–Fri: No new foods, no alcohol' },
+      { id: 'f4', text: 'Race morning: Breakfast burrito — 4 eggs, meat, rice, 2 tortillas' },
+      { id: 'f5', text: 'Race morning: Coffee' },
+    ]},
+    { id: 'fri_travel', title: 'Friday June 12 — Travel Day', items: [
+      { id: 'ft1',  text: 'Load bike on rack — confirm secure' },
+      { id: 'ft2',  text: 'Secure 4Runner cover' },
+      { id: 'ft3',  text: 'Load trailer — gear, nutrition, pit bag' },
+      { id: 'ft4',  text: 'Tool kit loaded' },
+      { id: 'ft5',  text: 'Depart — target Donnelly arrival 2:30pm' },
+      { id: 'ft6',  text: 'Hook up at Donnelly RV Park (full hookups)' },
+      { id: 'ft7',  text: 'Drive to JMR — packet pickup opens 5pm' },
+      { id: 'ft8',  text: 'Claim pit spot at start/finish area' },
+      { id: 'ft9',  text: 'Set up triangle shade cloth' },
+      { id: 'ft10', text: 'Preview lap — ride slow, focus on Vandelay entry and lines' },
+      { id: 'ft11', text: 'Note tightest corners and line choices on Vandelay' },
+      { id: 'ft12', text: 'Back to Donnelly — dinner, early bed' },
+    ]},
+    { id: 'sat_morning', title: 'Saturday June 13 — Race Morning', items: [
+      { id: 'sm1',  text: 'Wake up 6:00am' },
+      { id: 'sm2',  text: 'Breakfast burrito + coffee' },
+      { id: 'sm3',  text: 'Chamois cream + sunscreen applied' },
+      { id: 'sm4',  text: 'Tire pressure confirmed: Barzo 16psi / Mezcal 18psi' },
+      { id: 'sm5',  text: 'Garmin 540 charged and ready' },
+      { id: 'sm6',  text: 'AXS battery confirmed full' },
+      { id: 'sm7',  text: 'Depart Donnelly 7:15am' },
+      { id: 'sm8',  text: 'Arrive JMR 7:45am — final pit setup with Renee' },
+      { id: 'sm9',  text: 'Warmup 8:00–8:45am: easy spin + 2–3 × 30sec openers ~220W' },
+      { id: 'sm10', text: 'Stage 8:50am' },
+      { id: 'sm11', text: 'Race start 9:00am' },
+    ]},
+    { id: 'post_race', title: 'Post-Race', items: [
+      { id: 'pr1', text: 'Podium + raffle 5:30pm at start/finish' },
+      { id: 'pr2', text: 'Dinner on site (registered ✓ — Renee included)' },
+      { id: 'pr3', text: 'Download Garmin activity' },
+      { id: 'pr4', text: 'Note what worked / what to adjust for Enchanted Forest' },
+    ]},
+    { id: 'todo', title: 'To Do — General', items: [
+      { id: 'td1', text: 'Sprinkler repair (home)' },
+      { id: 'td2', text: 'Laundry' },
+      { id: 'td3', text: 'Pack clothes' },
+      { id: 'td4', text: 'Load bike gear' },
+      { id: 'td5', text: 'Secure rack' },
+      { id: 'td6', text: 'Cover 4Runner' },
+      { id: 'td7', text: 'Plan confirmed with Renee' },
+    ]},
+  ];
+
+  function initClState() {
+    if (clState) return;
+    clState = {};
+    CHECKLIST.forEach(s => s.items.forEach(item => { clState[item.id] = item.def === true; }));
+    saveClState();
+  }
+  function saveClState() { localStorage.setItem(LS_CL, JSON.stringify(clState)); }
+  function toggleClItem(id) { clState[id] = !clState[id]; saveClState(); renderChecklist(); }
+  function resetChecklist() {
+    if (!confirm('Reset all checklist items to defaults?')) return;
+    clState = null;
+    localStorage.removeItem(LS_CL);
+    initClState();
+    renderChecklist();
+  }
+  function renderChecklist() {
+    const body = document.getElementById('checklist-body');
+    let total = 0, done = 0, html = '';
+    CHECKLIST.forEach(section => {
+      html += `<div class="checklist-section"><div class="section-header">${section.title}</div>`;
+      section.items.forEach(item => {
+        const checked = clState[item.id];
+        if (checked) done++;
+        total++;
+        html += `<div class="checklist-item${checked ? ' done' : ''}" onclick="toggleClItem('${item.id}')">`;
+        html += `<div class="cl-check"></div><div class="cl-text">${item.text}</div></div>`;
+      });
+      html += `</div>`;
+    });
+    body.innerHTML = html;
+    document.getElementById('cl-done').textContent = done;
+    document.getElementById('cl-total').textContent = total;
+  }
+
+  function showTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function formatHMS(ms) {
+    if (ms < 0) ms = 0;
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+  }
+  function formatHM(ms) {
+    if (ms < 0) return '0:00';
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}`;
+  }
+  function formatMM(ms) {
+    if (ms < 0) return '0:00';
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 60)}:${pad(s % 60)}`;
+  }
+
+  function getLapStartTime() {
+    const stored = localStorage.getItem(LS_LAPST);
+    if (stored) return new Date(parseInt(stored));
+    const now = new Date();
+    return now >= RACE_START ? RACE_START : now;
+  }
+  function setLapStartTime(t) { localStorage.setItem(LS_LAPST, t.getTime().toString()); }
+
+  function tickClock() {
+    const now    = new Date();
+    const elEl   = document.getElementById('elapsed-display');
+    const remEl  = document.getElementById('remaining-display');
+    const lapEl  = document.getElementById('lap-display');
+    const raceMs = now - RACE_START;
+    const remMs  = RACE_END - now;
+
+    if (now < RACE_START) {
+      elEl.textContent  = '-' + formatHMS(RACE_START - now);
+      elEl.className    = 'clock-value';
+      remEl.textContent = '8:00';
+      remEl.className   = 'clock-value';
+      lapEl.textContent = '—';
+      lapEl.className   = 'clock-value cv-green';
+    } else if (now >= RACE_END) {
+      elEl.textContent  = '8:00:00';
+      elEl.className    = 'clock-value';
+      remEl.textContent = 'DONE';
+      remEl.className   = 'clock-value cv-red';
+      lapEl.textContent = '—';
+      lapEl.className   = 'clock-value';
+    } else {
+      elEl.textContent  = formatHMS(raceMs);
+      elEl.className    = 'clock-value cv-accent';
+      remEl.textContent = formatHM(remMs);
+      const remH = remMs / 3600000;
+      remEl.className   = 'clock-value ' + (remH > 2 ? 'cv-green' : remH > 1 ? 'cv-accent' : 'cv-red');
+      lapEl.textContent = formatMM(now - getLapStartTime());
+      lapEl.className   = 'clock-value cv-green';
+    }
+
+    if (lapFormOpen) {
+      capturedLapMs = new Date() - getLapStartTime();
+      updateTimeCaptureDisplay();
+    }
+  }
+
+  function openLapForm() {
+    lapFormOpen   = true;
+    capturedLapMs = new Date() - getLapStartTime();
+    timeAdjustMin = 0;
+    document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.check-opt').forEach(b => b.classList.remove('checked'));
+    document.getElementById('lap-notes').value = '';
+    updateTimeCaptureDisplay();
+    document.getElementById('log-lap-btn').classList.add('hidden');
+    document.getElementById('lap-form-container').classList.remove('hidden');
+    document.getElementById('lap-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeLapForm() {
+    lapFormOpen = false;
+    document.getElementById('lap-form-container').classList.add('hidden');
+    document.getElementById('log-lap-btn').classList.remove('hidden');
+  }
+
+  function updateTimeCaptureDisplay() {
+    const finalMs = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
+    document.getElementById('time-captured-display').textContent = formatMM(finalMs);
+  }
+
+  function selectSignal(btn) {
+    document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.querySelectorAll('#given-grid .check-opt').forEach(el => el.classList.remove('checked'));
+    const auto = { GOOD: ['large2','gel'], ADJUST: ['large2'], WATER: ['water'], LAYERS: [], BATTERY: [], MECH: [] };
+    (auto[btn.dataset.signal] || []).forEach(id => {
+      const el = document.querySelector(`#given-grid [data-id="${id}"]`);
+      if (el) el.classList.add('checked');
+    });
+  }
+
+  function toggleCheck(el) { el.classList.toggle('checked'); }
+
+  function adjustTime(delta) {
+    timeAdjustMin = Math.max(-30, Math.min(30, timeAdjustMin + delta));
+    updateTimeCaptureDisplay();
+  }
+
+  function saveLap() {
+    const now      = new Date();
+    const finalMs  = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
+    const signal   = document.querySelector('.signal-btn.selected')?.dataset.signal || '';
+    const given    = [...document.querySelectorAll('#given-grid .check-opt.checked')].map(el => el.dataset.id);
+    const returned = [...document.querySelectorAll('#returned-grid .check-opt.checked')].map(el => el.dataset.id);
+    const notes    = document.getElementById('lap-notes').value.trim();
+
+    laps.push({
+      num: laps.length + 1,
+      timeMs: finalMs,
+      timeMin: Math.round(finalMs / 60000),
+      signal, given, returned, notes,
+      logged: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    });
+
+    localStorage.setItem(LS_LAPS, JSON.stringify(laps));
+    setLapStartTime(now);
+    closeLapForm();
+    renderLaps();
+  }
+
+  function deleteLap(num) {
+    if (!confirm(`Delete lap ${num}?`)) return;
+    laps = laps.filter(l => l.num !== num);
+    laps.forEach((l, i) => { l.num = i + 1; });
+    localStorage.setItem(LS_LAPS, JSON.stringify(laps));
+    renderLaps();
+  }
+
+  const GIVEN_LABELS = { large2: 'Large 2sc', large3: 'Large 3sc', small: 'Small', water: 'Water', gel: 'Gel', 'gel-caff': 'Gel(caff)' };
+  const RET_LABELS   = { 'lg-empty': 'Lg empty', 'lg-partial': 'Lg partial', 'sm-empty': 'Sm empty', 'sm-partial': 'Sm partial', kept: 'Kept', nothing: 'Nothing' };
+
+  function renderLaps() {
+    const container = document.getElementById('lap-history');
+    const statsEl   = document.getElementById('summary-stats');
+
+    if (laps.length === 0) {
+      container.innerHTML = '<div class="no-laps">No laps logged yet.<br>Race starts 9:00am June 13.</div>';
+      statsEl.classList.add('hidden');
+      return;
+    }
+
+    statsEl.classList.remove('hidden');
+    const avg  = Math.round(laps.reduce((s, l) => s + l.timeMin, 0) / laps.length);
+    const best = Math.min(...laps.map(l => l.timeMin));
+    const gels = laps.filter(l => l.given.includes('gel') || l.given.includes('gel-caff')).length;
+    document.getElementById('stat-laps').textContent = laps.length;
+    document.getElementById('stat-avg').textContent  = avg || '—';
+    document.getElementById('stat-best').textContent = best < Infinity ? best : '—';
+    document.getElementById('stat-gels').textContent = gels;
+
+    let html = '<div class="lap-history-title">Lap History</div>';
+    [...laps].reverse().forEach(lap => {
+      const h = Math.floor(lap.timeMin / 60), m = lap.timeMin % 60;
+      const timeStr  = h > 0 ? `${h}h${pad(m)}m` : `${m}m`;
+      const givenStr = lap.given.map(id => GIVEN_LABELS[id] || id).join(', ') || '—';
+      const retStr   = lap.returned.map(id => RET_LABELS[id] || id).join(', ') || '—';
+      html += `<div class="lap-row">
+        <div class="lap-num">${lap.num}</div>
+        <div class="lap-details">
+          <div class="lap-time-row">
+            <div class="lap-time">${timeStr}</div>
+            ${lap.signal ? `<div class="lap-signal">${lap.signal}</div>` : ''}
+          </div>
+          <div class="lap-meta">Given: ${givenStr}</div>
+          <div class="lap-meta">Returned: ${retStr}</div>
+          ${lap.notes ? `<div class="lap-notes-text">${lap.notes}</div>` : ''}
+          <div class="lap-meta">Logged ${lap.logged}</div>
+        </div>
+        <button class="lap-delete" onclick="deleteLap(${lap.num})">✕</button>
+      </div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  initClState();
+  renderChecklist();
+  renderLaps();
+  setInterval(tickClock, 1000);
+  tickClock();
+</script>
+</body>
+</html>
