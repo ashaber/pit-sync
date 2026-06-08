@@ -5,7 +5,7 @@
 **End:** 5:00pm — all laps completed by 5pm count
 **Venue:** Jug Mountain Ranch, McCall, Idaho
 **Organizer:** Twisted Turtle Racing
-**Registration:** Zone4.ca | Contact: alex01phipps@gmail.com
+**Registration:** [Zone4.ca](https://zone4.ca) | Contact: [alex01phipps@gmail.com](mailto:alex01phipps@gmail.com)
 
 ---
 
@@ -15,7 +15,7 @@ Lap format endurance race. Course is roughly 9–10 miles in length. Start promp
 
 2026 course includes the lower portion of Vandelay trail — adds tight and sometimes technical turns, additional distance and climbing compared to 2025.
 
-**2026 Course Link:** Strava Route 3495145143887255900
+**2026 Course Link:** [Strava Route 3495145143887255900](https://www.strava.com/routes/3495145143887255900)
 
 ---
 
@@ -96,5 +96,5 @@ Added to end of lap. Tight and sometimes technical. Rides easy fresh — demandi
 
 ---
 
-*Source: twistedturtleracing.com/9-to-5 | Jug Mountain Ranch event page*
+*Source: [twistedturtleracing.com/9-to-5](https://www.twistedturtleracing.com/9-to-5) | Jug Mountain Ranch event page*
 *GPX analysis: 9_to_5_2026_Course.gpx*

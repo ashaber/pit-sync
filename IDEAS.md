@@ -76,7 +76,7 @@ Per-tab notes (feedback to organizer, notes for next year's race).
 ---
 
 ### IDEA-009
-**Decision: Dropped — not filled in. Re-open if needed.**
+Race timeline as its own tab.  shows at least day before.  focus on nearest upcoming time and allow checklist behavior to mark timeline items completed.  Plan ahead that cyclocross races this fall will have 2 days racing.  race day timeline is offset based. plan will define offsets.  e.g. meal 3hr before race start.  warmup 55 min before race start.
 
 ---
 

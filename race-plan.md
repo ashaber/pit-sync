@@ -4,7 +4,7 @@
 **Venue:** Jug Mountain Ranch, McCall ID
 **Category:** Solo 50+
 **Kit:** Lost River
-**Registration:** Zone4 #7174873 | Contact: alex01phipps@gmail.com
+**Registration:** [Zone4](https://zone4.ca) #7174873 | Contact: [alex01phipps@gmail.com](mailto:alex01phipps@gmail.com)
 
 ---
 
@@ -204,4 +204,4 @@
 
 ---
 
-*Registration confirmed May 30, 2026 | Zone4 #7174873*
+*Registration confirmed May 30, 2026 | [Zone4](https://zone4.ca) #7174873*

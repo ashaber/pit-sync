@@ -554,6 +554,100 @@
 
     .hidden { display: none !important; }
 
+    /* ── Stop button ── */
+    #stop-race-btn {
+      background: none;
+      border: 1px solid var(--red);
+      color: var(--red);
+      border-radius: 10px;
+      font-size: 12px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto 8px;
+    }
+
+    /* ── Export button ── */
+    .export-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 10px;
+      font-size: 12px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: block;
+      margin: 10px auto 0;
+    }
+    .export-btn:active { opacity: 0.7; }
+
+    /* ── Notes sections ── */
+    .notes-section { padding: 12px 16px 24px; }
+    .notes-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+    .notes-textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 10px 12px;
+      resize: none;
+      box-sizing: border-box;
+      min-height: 80px;
+      font-family: inherit;
+    }
+    .notes-textarea:focus { outline: none; border-color: var(--accent); }
+
+    /* ── Checklist done divider ── */
+    .cl-done-divider {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 10px 0 4px;
+      opacity: 0.5;
+    }
+
+    /* ── Markdown-rendered content (Plan, Bible tabs) ── */
+    .static-content a { color: var(--accent); text-decoration: none; }
+    .static-content a:active { opacity: 0.75; }
+    .static-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .static-content table th {
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .static-content table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.4;
+      vertical-align: top;
+    }
+    .static-content table td:first-child { color: var(--text2); }
+    .static-content table tr:last-child td { border-bottom: none; }
+    .static-content hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .static-content code { background: var(--surface2); border-radius: 4px; padding: 2px 6px; font-size: 12px; }
+
     #start-race-btn {
       width: 100%;
       background: var(--green);
@@ -625,6 +719,7 @@
         </div>
         <button id="start-race-btn" onclick="startRaceNow()">Start Race Now</button>
       </div>
+      <button id="stop-race-btn" class="hidden" onclick="stopRace()">Stop Race</button>
       <button id="reset-race-btn" class="hidden" onclick="resetRace()">Reset race timer</button>
 
       <button id="log-lap-btn" onclick="openLapForm()">+ Log Lap</button>
@@ -634,12 +729,12 @@
         <div class="form-section">
           <div class="form-section-title">Signal (Andrew's call)</div>
           <div class="signal-grid">
-            <button class="signal-btn" data-signal="GOOD"    onclick="selectSignal(this)">GOOD</button>
-            <button class="signal-btn" data-signal="ADJUST"  onclick="selectSignal(this)">ADJUST</button>
-            <button class="signal-btn" data-signal="WATER"   onclick="selectSignal(this)">WATER</button>
-            <button class="signal-btn" data-signal="LAYERS"  onclick="selectSignal(this)">LAYERS</button>
-            <button class="signal-btn" data-signal="BATTERY" onclick="selectSignal(this)">BATTERY</button>
-            <button class="signal-btn" data-signal="MECH"    onclick="selectSignal(this)">MECH</button>
+            <button class="signal-btn" data-signal="GOOD"    onclick="toggleSignal(this)">GOOD</button>
+            <button class="signal-btn" data-signal="ADJUST"  onclick="toggleSignal(this)">ADJUST</button>
+            <button class="signal-btn" data-signal="WATER"   onclick="toggleSignal(this)">WATER</button>
+            <button class="signal-btn" data-signal="LAYERS"  onclick="toggleSignal(this)">LAYERS</button>
+            <button class="signal-btn" data-signal="BATTERY" onclick="toggleSignal(this)">BATTERY</button>
+            <button class="signal-btn" data-signal="MECH"    onclick="toggleSignal(this)">MECH</button>
           </div>
         </div>
 
@@ -658,12 +753,12 @@
         <div class="form-section">
           <div class="form-section-title">Returned</div>
           <div class="checkbox-grid" id="returned-grid">
-            <label class="check-opt" data-id="lg-empty"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Large empty</span></label>
-            <label class="check-opt" data-id="lg-partial" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Large partial</span></label>
-            <label class="check-opt" data-id="sm-empty"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Small empty</span></label>
-            <label class="check-opt" data-id="sm-partial" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Small partial</span></label>
-            <label class="check-opt" data-id="kept"       onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Kept on bike</span></label>
-            <label class="check-opt" data-id="nothing"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Nothing back</span></label>
+            <label class="check-opt" data-id="empty"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Empty</span></label>
+            <label class="check-opt" data-id="1/4"     onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">1/4 full</span></label>
+            <label class="check-opt" data-id="1/2"     onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">1/2 full</span></label>
+            <label class="check-opt" data-id="3/4"     onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">3/4 full</span></label>
+            <label class="check-opt" data-id="kept"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Kept on bike</span></label>
+            <label class="check-opt" data-id="nothing" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Nothing back</span></label>
           </div>
         </div>
 
@@ -695,9 +790,15 @@
       <div class="stat-box"><div class="stat-val" id="stat-best">—</div><div class="stat-lbl">Best</div></div>
       <div class="stat-box"><div class="stat-val" id="stat-gels">0</div><div class="stat-lbl">Gels</div></div>
     </div>
+    <button id="export-btn" class="export-btn hidden" onclick="exportData()">↓ Export lap data</button>
 
     <div class="lap-history" id="lap-history">
       <div class="no-laps">No laps logged yet.<br>Race starts 9:00am June 13.</div>
+    </div>
+
+    <div class="notes-section">
+      <div class="notes-label">Race Notes</div>
+      <textarea class="notes-textarea" id="race-notes" placeholder="Overall race observations, anything to remember post-race..." rows="3"></textarea>
     </div>
   </div>
 
@@ -708,6 +809,10 @@
       <button class="btn-reset" onclick="resetChecklist()">Reset all</button>
     </div>
     <div id="checklist-body"></div>
+    <div class="notes-section">
+      <div class="notes-label">Checklist Notes</div>
+      <textarea class="notes-textarea" id="notes-checklist" placeholder="Notes for next race, items to add or remove..." rows="3"></textarea>
+    </div>
   </div>
 
   <!-- ══════════════════════════════ PACING TAB ══════════════════════════════ -->
@@ -789,206 +894,19 @@
 
   <!-- ══════════════════════════════ RACE PLAN TAB ══════════════════════════════ -->
   <div class="tab-panel" id="panel-plan">
-    <div class="static-content">
-      <h1>Race Plan — 9 to 5 @ JMR 2026</h1>
-      <p class="subtitle">June 13, 2026 | 9:00am – 5:00pm | Solo 50+ | Lost River</p>
-
-      <h2>Athlete Profile</h2>
-      <table class="data-table">
-        <tr><td>FTP</td><td>277W</td></tr>
-        <tr><td>LTHR</td><td>172bpm</td></tr>
-        <tr><td>Weight</td><td>160lbs</td></tr>
-        <tr><td>Bike</td><td>Trek Top Fuel 9.9 Gen 4</td></tr>
-        <tr><td>Drivetrain</td><td>SRAM XO Transmission</td></tr>
-        <tr><td>Power Meter</td><td>Quarq (crank)</td></tr>
-        <tr><td>Head Unit</td><td>Garmin 540</td></tr>
-      </table>
-
-      <h2>Course</h2>
-      <table class="data-table">
-        <tr><td>Distance</td><td>9.64 miles/lap</td></tr>
-        <tr><td>Climbing</td><td>1,369ft/lap</td></tr>
-        <tr><td>Elevation</td><td>5,091–5,663ft</td></tr>
-      </table>
-      <p>Key feature: <strong>Vandelay trail</strong> at end of lap — tight technical turns, new in 2026. Rides easy fresh, consequential when fatigued. Lap must finish before 5:00pm.</p>
-
-      <h2>Saturday Schedule</h2>
-      <table class="data-table">
-        <tr><td>6:00am</td><td>Wake up</td></tr>
-        <tr><td>6:30am</td><td>Breakfast burrito (4 eggs, meat, rice, 2 tortillas)</td></tr>
-        <tr><td>7:15am</td><td>Depart Donnelly</td></tr>
-        <tr><td>7:45am</td><td>Arrive JMR — final pit setup</td></tr>
-        <tr><td>8:00–8:45</td><td>Warmup: easy spin, 2–3 × 30sec openers ~220W</td></tr>
-        <tr><td>8:50am</td><td>Stage</td></tr>
-        <tr><td>9:00am</td><td>Race start (no LeMans run)</td></tr>
-        <tr><td>5:00pm</td><td>Race end — all laps completed by 5pm count</td></tr>
-        <tr><td>5:30pm</td><td>Podium + raffle + dinner</td></tr>
-      </table>
-
-      <h2>Target: 8 Laps</h2>
-      <table class="data-table">
-        <thead><tr><th>Lap</th><th>Target</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td>Controlled</td><td>No holeshot — controlled from gun</td></tr>
-          <tr><td>2</td><td>65–70 min</td><td>Resist early surge</td></tr>
-          <tr><td>3–5</td><td>65–70 min</td><td>Race rhythm, protect these laps</td></tr>
-          <tr><td>6–7</td><td>68–75 min</td><td>Accept fade, HR leads over power</td></tr>
-          <tr><td>8</td><td>Everything</td><td>Negative split goal</td></tr>
-        </tbody>
-      </table>
-
-      <h2>The One Pacing Rule</h2>
-      <blockquote>Never start a climb already in Z3.5. Come into climbs recovered.</blockquote>
-
-      <h2>Pacing by Terrain</h2>
-      <table class="data-table">
-        <thead><tr><th>Terrain</th><th>Power</th><th>HR Zone</th></tr></thead>
-        <tbody>
-          <tr><td>Sustained climb</td><td>205–220W</td><td>Z3, cap Z3.9</td></tr>
-          <tr><td>Punchy steep</td><td>≤270W</td><td>Z4 briefly</td></tr>
-          <tr><td>Flat / rolling</td><td>150–170W</td><td>Z2.5–Z3</td></tr>
-          <tr><td>Descent / Vandelay</td><td>Soft pedal</td><td>Z2 or below</td></tr>
-        </tbody>
-      </table>
-
-      <h2>Warning Signs</h2>
-      <ul>
-        <li>Z4 on sustained climb before lap 5 → back off immediately</li>
-        <li>HR not returning below Z3 within 90 sec after punch → ease next section</li>
-        <li>Z3.5 on flat terrain → back off</li>
-        <li>Still Z3 on descent → something is wrong upstream</li>
-      </ul>
-
-      <h2>Nutrition Protocol</h2>
-      <table class="data-table">
-        <thead><tr><th>Condition</th><th>Bottle</th><th>Gel</th></tr></thead>
-        <tbody>
-          <tr><td>Normal</td><td>Large 2sc</td><td>Yes</td></tr>
-          <tr><td>Gut warning</td><td>Large 2sc</td><td>No</td></tr>
-          <tr><td>Gut distress</td><td>Plain water</td><td>No</td></tr>
-          <tr><td>Recovery lap</td><td>Large 2sc</td><td>Yes</td></tr>
-        </tbody>
-      </table>
-      <p>Caffeine gels: max 3 total — laps 5–7 only. Act early at first gut signal. Plain water lap resets GI. Pass gas = resolved, resume normal next lap.</p>
-
-      <h2>Layers Protocol</h2>
-      <div class="warn-box"><strong>Lesson from 2025:</strong> You froze when snow hit lap 5. Put layers on one lap early. Remove one lap early. Don't wait until cold.</div>
-      <table class="data-table">
-        <thead><tr><th>Item</th><th>Deploy When</th></tr></thead>
-        <tbody>
-          <tr><td>Wind vest</td><td>Temperature drops, pre-storm sky</td></tr>
-          <tr><td>Arm warmers</td><td>Sustained cloud cover, cold descents</td></tr>
-          <tr><td>Rain jacket</td><td>Rain starting or imminent</td></tr>
-          <tr><td>Light gloves</td><td>Hands losing feel on descents</td></tr>
-        </tbody>
-      </table>
-
-      <h2>Key Reminders</h2>
-      <ol>
-        <li>Lap 2 — controlled start, no holeshot unless the steep climb chaos is real</li>
-        <li>Vandelay — scout Friday evening, descent is recovery not a time trial</li>
-        <li>Gut signal — act at first sign, plain water, reset</li>
-        <li>Layers — one lap early beats freezing for three laps</li>
-        <li>Lap 8 — everything left, negative split is the goal</li>
-        <li>Pit time — under 90 seconds. Renee runs the pit, trust her.</li>
-      </ol>
-
-      <h2>Bike Setup</h2>
-      <table class="data-table">
-        <tr><td>Front tire</td><td>Vittoria Barzo 29x2.4 TLR — 16psi</td></tr>
-        <tr><td>Rear tire</td><td>Vittoria Mezcal 29x2.4 TLR — 18psi</td></tr>
-        <tr><td>Fork</td><td>RockShox Pike Ultimate 130mm</td></tr>
-        <tr><td>Shock</td><td>RockShox Deluxe Ultimate</td></tr>
-        <tr><td>Drivetrain</td><td>SRAM XO Transmission</td></tr>
-        <tr><td>Brakes</td><td>SRAM Level — MTX ceramic pads</td></tr>
-        <tr><td>Chain</td><td>XO Flattop (new June 2026)</td></tr>
-      </table>
+    <div id="plan-content" class="static-content"></div>
+    <div class="notes-section">
+      <div class="notes-label">Plan Notes</div>
+      <textarea class="notes-textarea" id="notes-plan" placeholder="Notes for next race, changes to the plan..." rows="3"></textarea>
     </div>
   </div>
 
   <!-- ══════════════════════════════ RACE BIBLE TAB ══════════════════════════════ -->
   <div class="tab-panel" id="panel-bible">
-    <div class="static-content">
-      <h1>Race Bible — 9 to 5 @ JMR</h1>
-      <p class="subtitle">June 13, 2026 | Jug Mountain Ranch, McCall ID | Twisted Turtle Racing</p>
-
-      <h2>The Race</h2>
-      <p>Lap format endurance race. Course ~9–10 miles. Start 9:00am sharp. All laps completed by 5:00pm count.</p>
-      <p>2026 course includes the lower portion of <strong>Vandelay trail</strong> — adds tight and sometimes technical turns, additional distance and climbing vs. 2025.</p>
-
-      <h2>Registration</h2>
-      <table class="data-table">
-        <tr><td>Site</td><td>Zone4.ca</td></tr>
-        <tr><td>Confirmation</td><td>#7174873</td></tr>
-        <tr><td>Contact</td><td>alex01phipps@gmail.com</td></tr>
-        <tr><td>Strava Route</td><td>3495145143887255900</td></tr>
-      </table>
-
-      <h2>Venue &amp; Parking</h2>
-      <ul>
-        <li>Start/finish at trailhead parking lot (returning for 2026)</li>
-        <li><strong>No trailers on site</strong></li>
-        <li>Camping limited to upper parking lot only</li>
-        <li>No campfires</li>
-        <li>All trails closed to public 7:00am – 5:00pm</li>
-      </ul>
-
-      <h2>Pit Zone</h2>
-      <ul>
-        <li>Pit zone is on course at start/finish area</li>
-        <li>Shade structure must be self-provided (no venue canopy)</li>
-      </ul>
-
-      <h2>Packet Pickup</h2>
-      <table class="data-table">
-        <tr><td>Friday June 12</td><td>5:00pm to dark</td></tr>
-        <tr><td>Saturday June 13</td><td>Race morning</td></tr>
-      </table>
-
-      <h2>Post-Race</h2>
-      <ul>
-        <li>Raffle and podium at <strong>5:30pm</strong> at start/finish</li>
-        <li>Dinner on site — registered before June 7 ✓ — Renee included</li>
-        <li>Food trucks during race (depart ~8pm)</li>
-      </ul>
-
-      <h2>Course Details</h2>
-      <table class="data-table">
-        <tr><td>Distance/lap</td><td>9.64 miles</td></tr>
-        <tr><td>Climbing/lap</td><td>1,369ft</td></tr>
-        <tr><td>Min elevation</td><td>5,091ft</td></tr>
-        <tr><td>Max elevation</td><td>5,663ft</td></tr>
-        <tr><td>Range</td><td>572ft</td></tr>
-      </table>
-
-      <h2>Course Profile</h2>
-      <table class="data-table">
-        <thead><tr><th>Miles</th><th>Feature</th></tr></thead>
-        <tbody>
-          <tr><td>0–1</td><td>Hard climb out of start, gain ~260ft</td></tr>
-          <tr><td>1–3</td><td>Sustained high plateau ~5,590ft — find rhythm here</td></tr>
-          <tr><td>3.9–4.8</td><td>Course crux — peak at 5,663ft, sharp descent</td></tr>
-          <tr><td>5–6</td><td>Recovery descent then climb back to 5,600ft</td></tr>
-          <tr><td>6.7–7.7</td><td>Significant descent ~485ft</td></tr>
-          <tr><td>7.7–9.6</td><td>Vandelay — tight turns, gradual return to start</td></tr>
-        </tbody>
-      </table>
-
-      <h2>Vandelay (new 2026)</h2>
-      <p>Added to end of lap. Tight and sometimes technical. Rides easy fresh — demanding when fatigued at race pace. Scout Friday evening. Descent into finish is recovery, not a time trial.</p>
-
-      <h2>Categories</h2>
-      <ul>
-        <li>Solo</li>
-        <li>Duo — Male, Female, Co-Ed</li>
-        <li>Trio — Open</li>
-      </ul>
-
-      <h2>Prior Results</h2>
-      <ul>
-        <li>2025: zone4.ca/race/2025-06-21/ea9b0274/results</li>
-        <li>2024: zone4.ca/race/2024-06-22/733eb954/results</li>
-      </ul>
+    <div id="bible-content" class="static-content"></div>
+    <div class="notes-section">
+      <div class="notes-label">Bible Notes</div>
+      <textarea class="notes-textarea" id="notes-bible" placeholder="Notes for next race, corrections, what changed..." rows="3"></textarea>
     </div>
   </div>
 
