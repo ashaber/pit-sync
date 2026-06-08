@@ -102,30 +102,14 @@ Pacing targets are derived from FIT file analysis of prior race data (FTP 277W, 
 ## Athlete Context (for race-specific configuration)
 
 ```
-Athlete: Andrew Shaber
-FTP: 277W | LTHR: 172bpm | Weight: 160lbs
-Category: Solo 50+
-Race: 9 to 5 @ Jug Mountain Ranch, McCall ID
-Course: 9.64 miles, 1,369ft climbing/lap, 5,091–5,663ft elevation
-Target: 8 laps | Race window: 9:00am–5:00pm
-Bike: Trek Top Fuel 9.9 Gen 4, SRAM XO Transmission, Quarq power meter
+see race-plan.md for full profile
 ```
 
 ### Pit Signal Vocabulary (one-word, pre-agreed)
-| Signal | Renee Action |
-|--------|-------------|
-| GOOD | Large bottle 3sc + gel |
-| ADJUST | Large bottle 2sc, no gel |
-| WATER | Plain water, no gel |
-| LAYERS | Add/remove layer |
-| BATTERY | Swap AXS derailleur battery |
-| MECH | Tools out |
+see race-plan.md for signal vocabulary
 
 ### Nutrition Protocol
-- Formula 369 in bottles (2–3 scoops depending on condition)
-- Maurten gels to supplement — max 3 caffeine gels, laps 5–7 only
-- Gut management: plain water lap resets GI distress, resume normal next lap
-
+see race-plan.md for nutrition protocol
 ---
 
 ## Known Issues / Deferred
@@ -150,6 +134,8 @@ Bike: Trek Top Fuel 9.9 Gen 4, SRAM XO Transmission, Quarq power meter
 - [x] GitHub Pages deployment
 
 ### Phase 2 — Generalization
+- [ ] google docs data sync when on-line
+- [ ] shared checklist between pit and athlete
 - [ ] PWA manifest + service worker (vite-plugin-pwa, matching mtb-skills Phase 2)
 - [ ] Configurable race profile (FTP, LTHR, course details, pacing targets)
 - [ ] Configurable pit signal vocabulary
@@ -162,6 +148,7 @@ Bike: Trek Top Fuel 9.9 Gen 4, SRAM XO Transmission, Quarq power meter
 - [ ] Share lap data with athlete's Garmin/Strava post-race (export format)
 - [ ] Optional: merge into mtb-skills repo as a separate tool under `/race`
 - [ ] Optional: Google Sheets sync for Renee's post-race notes
+- [ ] multi-athlete version
 
 ### Moonshot
 - [ ] Live power/HR overlay if athlete device has ANT+ broadcast and pit has signal
@@ -175,6 +162,9 @@ race-pit-tool/
   index.html        ← entire app (HTML + CSS + JS inline)
   CLAUDE.md         ← this file
   README.md         ← public-facing description
+  race-bible.md     <- description of this race 
+  race-plan.md      <- plan for this race including race week timeline
+  race-checklist.md <- readiness checklist
   .github/
     workflows/
       deploy.yml    ← GitHub Pages static deploy (copy from mtb-skills)
