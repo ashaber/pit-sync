@@ -126,6 +126,9 @@ see race-plan.md for nutrition protocol
 
 ## Roadmap
 
+### Phase 0.5 — Enhancements (pre-race, this week)
+- [ ] ENH-001: Manual race start button for testing + pre-race countdown (within 30 min of start) — implemented, needs verification
+
 ### Phase 1 (current — race-ready)
 - [x] Single HTML file
 - [x] Checklist with persistence

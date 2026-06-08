@@ -553,6 +553,43 @@
     }
 
     .hidden { display: none !important; }
+
+    #start-race-btn {
+      width: 100%;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 18px;
+      cursor: pointer;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: block;
+    }
+    #start-race-btn:active { opacity: 0.82; }
+    #reset-race-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 10px;
+      font-size: 12px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto 14px;
+    }
+    .countdown-banner {
+      background: var(--surface);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .countdown-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .countdown-time { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); letter-spacing: -0.02em; }
   </style>
 </head>
 <body>
@@ -580,6 +617,15 @@
   <!-- ══════════════════════════════ LAPS TAB ══════════════════════════════ -->
   <div class="tab-panel active" id="panel-laps">
     <div class="laps-hero">
+
+      <div id="prerace-ui" class="hidden">
+        <div class="countdown-banner">
+          <div class="countdown-label">Race starts in</div>
+          <div class="countdown-time" id="countdown-display">—</div>
+        </div>
+        <button id="start-race-btn" onclick="startRaceNow()">Start Race Now</button>
+      </div>
+      <button id="reset-race-btn" class="hidden" onclick="resetRace()">Reset race timer</button>
 
       <button id="log-lap-btn" onclick="openLapForm()">+ Log Lap</button>
 
@@ -972,391 +1018,6 @@
 
 </div><!-- /app -->
 
-<script>
-  const RACE_START = new Date('2026-06-13T09:00:00');
-  const RACE_END   = new Date('2026-06-13T17:00:00');
-  const LS_LAPS  = '9to5_2026_laps';
-  const LS_CL    = '9to5_2026_checklist';
-  const LS_LAPST = '9to5_2026_lapstart';
-
-  let laps          = JSON.parse(localStorage.getItem(LS_LAPS) || '[]');
-  let clState       = JSON.parse(localStorage.getItem(LS_CL)   || 'null');
-  let lapFormOpen   = false;
-  let capturedLapMs = 0;
-  let timeAdjustMin = 0;
-
-  const CHECKLIST = [
-    { id: 'trailer', title: 'Trailer Prep', items: [
-      { id: 'tr1',  text: 'Place mats', def: true },
-      { id: 'tr2',  text: 'Water heater (dewinterized + troubleshot)', def: true },
-      { id: 'tr3',  text: 'Refrigerator working', def: true },
-      { id: 'tr4',  text: 'Oil, salt, pan, spatula', def: true },
-      { id: 'tr5',  text: 'Eggs, tortillas', def: true },
-      { id: 'tr6',  text: 'Tire pressure checked' },
-      { id: 'tr7',  text: 'Propane checked' },
-      { id: 'tr8',  text: 'Organize hose' },
-      { id: 'tr9',  text: 'Water jugs filled' },
-      { id: 'tr10', text: 'Short work list completed' },
-    ]},
-    { id: 'bike_done', title: 'Bike — Already Done', items: [
-      { id: 'bd1',  text: 'New chain installed (SRAM XO Flattop)', def: true },
-      { id: 'bd2',  text: 'MTX ceramic brake pads — front and rear (1 ride)', def: true },
-      { id: 'bd3',  text: 'Barzo 29x2.4 TLR mounted front — sealant fresh', def: true },
-      { id: 'bd4',  text: 'Mezcal 29x2.4 TLR mounted rear', def: true },
-      { id: 'bd5',  text: 'Tire pressure set: Barzo 16psi / Mezcal 18psi', def: true },
-      { id: 'bd6',  text: 'Fork sag set — Pike Ultimate 130mm (63psi → 62psi)', def: true },
-      { id: 'bd7',  text: 'Rear shock set — Deluxe Ultimate (153psi)', def: true },
-      { id: 'bd8',  text: 'All bolts retorqued to spec', def: true },
-      { id: 'bd9',  text: 'Drivetrain clean — shifting best it\'s been', def: true },
-      { id: 'bd10', text: 'Dropper post lubed', def: true },
-      { id: 'bd11', text: 'Freehub lubed (Dumond Tech)', def: true },
-      { id: 'bd12', text: 'Deep clean after Sun Valley mud ride', def: true },
-    ]},
-    { id: 'bike_week', title: 'Bike — This Week', items: [
-      { id: 'bw1',  text: 'Mechanic visit — chainstay guard secured, brake cable shortened' },
-      { id: 'bw2',  text: 'Confirm brake bed-in ride post-mechanic (minimum 1)' },
-      { id: 'bw3',  text: 'Minimum 2 more rides on Barzo before race day' },
-      { id: 'bw4',  text: 'AXS derailleur battery — full charge confirmed race morning' },
-      { id: 'bw5',  text: 'AXS spare battery — fully charged, staged with Renee' },
-      { id: 'bw6',  text: 'Check AXS firmware current on all components (AXS app)' },
-      { id: 'bw7',  text: 'Garmin 540 — screen layout confirmed (3s power / lap avg / HR zone / lap timer)' },
-      { id: 'bw8',  text: 'Garmin 540 — 2026 course GPX loaded' },
-      { id: 'bw9',  text: 'Garmin 540 — auto-lap GPS trigger set at start/finish coordinate' },
-      { id: 'bw10', text: 'Wash bike before loading' },
-    ]},
-    { id: 'gear', title: 'Gear', items: [
-      { id: 'g1',  text: 'Lost River race kit' },
-      { id: 'g2',  text: 'Helmet' },
-      { id: 'g3',  text: 'Gloves' },
-      { id: 'g4',  text: 'Shoes + socks' },
-      { id: 'g5',  text: 'Sunglasses — clear lens staged for evening laps' },
-      { id: 'g6',  text: 'HRM strap' },
-      { id: 'g7',  text: 'Chamois cream (apply race morning)' },
-      { id: 'g8',  text: 'Sunscreen (apply race morning)' },
-      { id: 'g9',  text: 'Training kits' },
-      { id: 'g10', text: 'Training tires (on training wheels)' },
-      { id: 'g11', text: 'Waist pack if needed' },
-    ]},
-    { id: 'layers', title: 'Layer Kit (staged with Renee)', items: [
-      { id: 'l1', text: 'Wind vest' },
-      { id: 'l2', text: 'Arm warmers' },
-      { id: 'l3', text: 'Rain jacket' },
-      { id: 'l4', text: 'Light gloves' },
-      { id: 'l5', text: 'Emergency base layer' },
-    ]},
-    { id: 'pitbag', title: 'Mechanical / Pit Bag (Renee)', items: [
-      { id: 'pb1', text: 'Spare tubes x2' },
-      { id: 'pb2', text: 'Tubeless plug kit' },
-      { id: 'pb3', text: 'Sealant top-up bottle' },
-      { id: 'pb4', text: 'CO2 x3 + inflator' },
-      { id: 'pb5', text: 'SRAM Flattop quick links x2' },
-      { id: 'pb6', text: 'Multi-tool' },
-      { id: 'pb7', text: 'AXS spare battery (fully charged)' },
-      { id: 'pb8', text: 'Spare MTX brake pads' },
-      { id: 'pb9', text: 'Tire levers x2' },
-    ]},
-    { id: 'onbike', title: 'On-Bike Kit', items: [
-      { id: 'ob1', text: 'Tubeless plugs' },
-      { id: 'ob2', text: 'CO2 x1' },
-      { id: 'ob3', text: 'Multi-tool' },
-      { id: 'ob4', text: 'Quick link x1' },
-    ]},
-    { id: 'nutrition', title: 'Nutrition', items: [
-      { id: 'n1', text: 'Formula 369 — enough for 10+ large bottles (2 scoops each)' },
-      { id: 'n2', text: 'Maurten gels — 8 regular + 3 caffeine (separate caffeine gels)' },
-      { id: 'n3', text: 'Plain water bottles x2 staged at pit' },
-      { id: 'n4', text: 'Post-race recovery nutrition staged' },
-      { id: 'n5', text: 'Race morning snack for drive if needed' },
-    ]},
-    { id: 'renee_fri', title: 'Renee — Friday Night at Donnelly', items: [
-      { id: 'rf1', text: 'Pre-mix all Formula 369 bottles — label Large-2sc / Water' },
-      { id: 'rf2', text: 'Separate and label caffeine gels (max 3, laps 5–7)' },
-      { id: 'rf3', text: 'Inventory layer kit — confirm all items present' },
-      { id: 'rf4', text: 'Confirm pit bag contents against mechanical list' },
-      { id: 'rf5', text: 'Charge Garmin 540 fully' },
-      { id: 'rf6', text: 'Charge AXS spare battery fully' },
-      { id: 'rf7', text: 'Breakfast prep ready for 6:30am (burrito ingredients)' },
-      { id: 'rf8', text: 'Review PitSync app and signal vocabulary with Andrew' },
-      { id: 'rf9', text: 'Review one-word signals: GOOD / ADJUST / WATER / LAYERS / BATTERY / MECH' },
-    ]},
-    { id: 'food', title: 'Food — Carb Load', items: [
-      { id: 'f1', text: 'Mon–Wed: Normal clean food, stay well hydrated' },
-      { id: 'f2', text: 'Thu–Fri: Increase carbs at every meal (rice, pasta, potatoes, bread)' },
-      { id: 'f3', text: 'Thu–Fri: No new foods, no alcohol' },
-      { id: 'f4', text: 'Race morning: Breakfast burrito — 4 eggs, meat, rice, 2 tortillas' },
-      { id: 'f5', text: 'Race morning: Coffee' },
-    ]},
-    { id: 'fri_travel', title: 'Friday June 12 — Travel Day', items: [
-      { id: 'ft1',  text: 'Load bike on rack — confirm secure' },
-      { id: 'ft2',  text: 'Secure 4Runner cover' },
-      { id: 'ft3',  text: 'Load trailer — gear, nutrition, pit bag' },
-      { id: 'ft4',  text: 'Tool kit loaded' },
-      { id: 'ft5',  text: 'Depart — target Donnelly arrival 2:30pm' },
-      { id: 'ft6',  text: 'Hook up at Donnelly RV Park (full hookups)' },
-      { id: 'ft7',  text: 'Drive to JMR — packet pickup opens 5pm' },
-      { id: 'ft8',  text: 'Claim pit spot at start/finish area' },
-      { id: 'ft9',  text: 'Set up triangle shade cloth' },
-      { id: 'ft10', text: 'Preview lap — ride slow, focus on Vandelay entry and lines' },
-      { id: 'ft11', text: 'Note tightest corners and line choices on Vandelay' },
-      { id: 'ft12', text: 'Back to Donnelly — dinner, early bed' },
-    ]},
-    { id: 'sat_morning', title: 'Saturday June 13 — Race Morning', items: [
-      { id: 'sm1',  text: 'Wake up 6:00am' },
-      { id: 'sm2',  text: 'Breakfast burrito + coffee' },
-      { id: 'sm3',  text: 'Chamois cream + sunscreen applied' },
-      { id: 'sm4',  text: 'Tire pressure confirmed: Barzo 16psi / Mezcal 18psi' },
-      { id: 'sm5',  text: 'Garmin 540 charged and ready' },
-      { id: 'sm6',  text: 'AXS battery confirmed full' },
-      { id: 'sm7',  text: 'Depart Donnelly 7:15am' },
-      { id: 'sm8',  text: 'Arrive JMR 7:45am — final pit setup with Renee' },
-      { id: 'sm9',  text: 'Warmup 8:00–8:45am: easy spin + 2–3 × 30sec openers ~220W' },
-      { id: 'sm10', text: 'Stage 8:50am' },
-      { id: 'sm11', text: 'Race start 9:00am' },
-    ]},
-    { id: 'post_race', title: 'Post-Race', items: [
-      { id: 'pr1', text: 'Podium + raffle 5:30pm at start/finish' },
-      { id: 'pr2', text: 'Dinner on site (registered ✓ — Renee included)' },
-      { id: 'pr3', text: 'Download Garmin activity' },
-      { id: 'pr4', text: 'Note what worked / what to adjust for Enchanted Forest' },
-    ]},
-    { id: 'todo', title: 'To Do — General', items: [
-      { id: 'td1', text: 'Sprinkler repair (home)' },
-      { id: 'td2', text: 'Laundry' },
-      { id: 'td3', text: 'Pack clothes' },
-      { id: 'td4', text: 'Load bike gear' },
-      { id: 'td5', text: 'Secure rack' },
-      { id: 'td6', text: 'Cover 4Runner' },
-      { id: 'td7', text: 'Plan confirmed with Renee' },
-    ]},
-  ];
-
-  function initClState() {
-    if (clState) return;
-    clState = {};
-    CHECKLIST.forEach(s => s.items.forEach(item => { clState[item.id] = item.def === true; }));
-    saveClState();
-  }
-  function saveClState() { localStorage.setItem(LS_CL, JSON.stringify(clState)); }
-  function toggleClItem(id) { clState[id] = !clState[id]; saveClState(); renderChecklist(); }
-  function resetChecklist() {
-    if (!confirm('Reset all checklist items to defaults?')) return;
-    clState = null;
-    localStorage.removeItem(LS_CL);
-    initClState();
-    renderChecklist();
-  }
-  function renderChecklist() {
-    const body = document.getElementById('checklist-body');
-    let total = 0, done = 0, html = '';
-    CHECKLIST.forEach(section => {
-      html += `<div class="checklist-section"><div class="section-header">${section.title}</div>`;
-      section.items.forEach(item => {
-        const checked = clState[item.id];
-        if (checked) done++;
-        total++;
-        html += `<div class="checklist-item${checked ? ' done' : ''}" onclick="toggleClItem('${item.id}')">`;
-        html += `<div class="cl-check"></div><div class="cl-text">${item.text}</div></div>`;
-      });
-      html += `</div>`;
-    });
-    body.innerHTML = html;
-    document.getElementById('cl-done').textContent = done;
-    document.getElementById('cl-total').textContent = total;
-  }
-
-  function showTab(name) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('panel-' + name).classList.add('active');
-    document.getElementById('nav-' + name).classList.add('active');
-  }
-
-  function pad(n) { return String(n).padStart(2, '0'); }
-  function formatHMS(ms) {
-    if (ms < 0) ms = 0;
-    const s = Math.floor(ms / 1000);
-    return `${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
-  }
-  function formatHM(ms) {
-    if (ms < 0) return '0:00';
-    const s = Math.floor(ms / 1000);
-    return `${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}`;
-  }
-  function formatMM(ms) {
-    if (ms < 0) return '0:00';
-    const s = Math.floor(ms / 1000);
-    return `${Math.floor(s / 60)}:${pad(s % 60)}`;
-  }
-
-  function getLapStartTime() {
-    const stored = localStorage.getItem(LS_LAPST);
-    if (stored) return new Date(parseInt(stored));
-    const now = new Date();
-    return now >= RACE_START ? RACE_START : now;
-  }
-  function setLapStartTime(t) { localStorage.setItem(LS_LAPST, t.getTime().toString()); }
-
-  function tickClock() {
-    const now    = new Date();
-    const elEl   = document.getElementById('elapsed-display');
-    const remEl  = document.getElementById('remaining-display');
-    const lapEl  = document.getElementById('lap-display');
-    const raceMs = now - RACE_START;
-    const remMs  = RACE_END - now;
-
-    if (now < RACE_START) {
-      elEl.textContent  = '-' + formatHMS(RACE_START - now);
-      elEl.className    = 'clock-value';
-      remEl.textContent = '8:00';
-      remEl.className   = 'clock-value';
-      lapEl.textContent = '—';
-      lapEl.className   = 'clock-value cv-green';
-    } else if (now >= RACE_END) {
-      elEl.textContent  = '8:00:00';
-      elEl.className    = 'clock-value';
-      remEl.textContent = 'DONE';
-      remEl.className   = 'clock-value cv-red';
-      lapEl.textContent = '—';
-      lapEl.className   = 'clock-value';
-    } else {
-      elEl.textContent  = formatHMS(raceMs);
-      elEl.className    = 'clock-value cv-accent';
-      remEl.textContent = formatHM(remMs);
-      const remH = remMs / 3600000;
-      remEl.className   = 'clock-value ' + (remH > 2 ? 'cv-green' : remH > 1 ? 'cv-accent' : 'cv-red');
-      lapEl.textContent = formatMM(now - getLapStartTime());
-      lapEl.className   = 'clock-value cv-green';
-    }
-
-    if (lapFormOpen) {
-      capturedLapMs = new Date() - getLapStartTime();
-      updateTimeCaptureDisplay();
-    }
-  }
-
-  function openLapForm() {
-    lapFormOpen   = true;
-    capturedLapMs = new Date() - getLapStartTime();
-    timeAdjustMin = 0;
-    document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
-    document.querySelectorAll('.check-opt').forEach(b => b.classList.remove('checked'));
-    document.getElementById('lap-notes').value = '';
-    updateTimeCaptureDisplay();
-    document.getElementById('log-lap-btn').classList.add('hidden');
-    document.getElementById('lap-form-container').classList.remove('hidden');
-    document.getElementById('lap-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function closeLapForm() {
-    lapFormOpen = false;
-    document.getElementById('lap-form-container').classList.add('hidden');
-    document.getElementById('log-lap-btn').classList.remove('hidden');
-  }
-
-  function updateTimeCaptureDisplay() {
-    const finalMs = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
-    document.getElementById('time-captured-display').textContent = formatMM(finalMs);
-  }
-
-  function selectSignal(btn) {
-    document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    document.querySelectorAll('#given-grid .check-opt').forEach(el => el.classList.remove('checked'));
-    const auto = { GOOD: ['large2','gel'], ADJUST: ['large2'], WATER: ['water'], LAYERS: [], BATTERY: [], MECH: [] };
-    (auto[btn.dataset.signal] || []).forEach(id => {
-      const el = document.querySelector(`#given-grid [data-id="${id}"]`);
-      if (el) el.classList.add('checked');
-    });
-  }
-
-  function toggleCheck(el) { el.classList.toggle('checked'); }
-
-  function adjustTime(delta) {
-    timeAdjustMin = Math.max(-30, Math.min(30, timeAdjustMin + delta));
-    updateTimeCaptureDisplay();
-  }
-
-  function saveLap() {
-    const now      = new Date();
-    const finalMs  = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
-    const signal   = document.querySelector('.signal-btn.selected')?.dataset.signal || '';
-    const given    = [...document.querySelectorAll('#given-grid .check-opt.checked')].map(el => el.dataset.id);
-    const returned = [...document.querySelectorAll('#returned-grid .check-opt.checked')].map(el => el.dataset.id);
-    const notes    = document.getElementById('lap-notes').value.trim();
-
-    laps.push({
-      num: laps.length + 1,
-      timeMs: finalMs,
-      timeMin: Math.round(finalMs / 60000),
-      signal, given, returned, notes,
-      logged: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-    });
-
-    localStorage.setItem(LS_LAPS, JSON.stringify(laps));
-    setLapStartTime(now);
-    closeLapForm();
-    renderLaps();
-  }
-
-  function deleteLap(num) {
-    if (!confirm(`Delete lap ${num}?`)) return;
-    laps = laps.filter(l => l.num !== num);
-    laps.forEach((l, i) => { l.num = i + 1; });
-    localStorage.setItem(LS_LAPS, JSON.stringify(laps));
-    renderLaps();
-  }
-
-  const GIVEN_LABELS = { large2: 'Large 2sc', large3: 'Large 3sc', small: 'Small', water: 'Water', gel: 'Gel', 'gel-caff': 'Gel(caff)' };
-  const RET_LABELS   = { 'lg-empty': 'Lg empty', 'lg-partial': 'Lg partial', 'sm-empty': 'Sm empty', 'sm-partial': 'Sm partial', kept: 'Kept', nothing: 'Nothing' };
-
-  function renderLaps() {
-    const container = document.getElementById('lap-history');
-    const statsEl   = document.getElementById('summary-stats');
-
-    if (laps.length === 0) {
-      container.innerHTML = '<div class="no-laps">No laps logged yet.<br>Race starts 9:00am June 13.</div>';
-      statsEl.classList.add('hidden');
-      return;
-    }
-
-    statsEl.classList.remove('hidden');
-    const avg  = Math.round(laps.reduce((s, l) => s + l.timeMin, 0) / laps.length);
-    const best = Math.min(...laps.map(l => l.timeMin));
-    const gels = laps.filter(l => l.given.includes('gel') || l.given.includes('gel-caff')).length;
-    document.getElementById('stat-laps').textContent = laps.length;
-    document.getElementById('stat-avg').textContent  = avg || '—';
-    document.getElementById('stat-best').textContent = best < Infinity ? best : '—';
-    document.getElementById('stat-gels').textContent = gels;
-
-    let html = '<div class="lap-history-title">Lap History</div>';
-    [...laps].reverse().forEach(lap => {
-      const h = Math.floor(lap.timeMin / 60), m = lap.timeMin % 60;
-      const timeStr  = h > 0 ? `${h}h${pad(m)}m` : `${m}m`;
-      const givenStr = lap.given.map(id => GIVEN_LABELS[id] || id).join(', ') || '—';
-      const retStr   = lap.returned.map(id => RET_LABELS[id] || id).join(', ') || '—';
-      html += `<div class="lap-row">
-        <div class="lap-num">${lap.num}</div>
-        <div class="lap-details">
-          <div class="lap-time-row">
-            <div class="lap-time">${timeStr}</div>
-            ${lap.signal ? `<div class="lap-signal">${lap.signal}</div>` : ''}
-          </div>
-          <div class="lap-meta">Given: ${givenStr}</div>
-          <div class="lap-meta">Returned: ${retStr}</div>
-          ${lap.notes ? `<div class="lap-notes-text">${lap.notes}</div>` : ''}
-          <div class="lap-meta">Logged ${lap.logged}</div>
-        </div>
-        <button class="lap-delete" onclick="deleteLap(${lap.num})">✕</button>
-      </div>`;
-    });
-    container.innerHTML = html;
-  }
-
-  initClState();
-  renderChecklist();
-  renderLaps();
-  setInterval(tickClock, 1000);
-  tickClock();
-</script>
+<script type="module" src="/src/app.js"></script>
 </body>
 </html>
