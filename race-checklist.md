@@ -5,11 +5,11 @@
 ---
 
 ## Trailer Prep
-- [x] Place mats
-- [x] Water heater (dewinterized + troubleshot)
-- [x] Refrigerator working
-- [x] Oil, salt, pan, spatula
-- [x] Eggs, tortillas
+- [ ] Place mats
+- [ ] Water heater (dewinterized + troubleshot)
+- [ ] Refrigerator working
+- [ ] Oil, salt, pan, spatula
+- [ ] Eggs, tortillas
 - [ ] Tire pressure checked
 - [ ] Propane checked
 - [ ] Organize hose
@@ -19,18 +19,18 @@
 ---
 
 ## Bike — Already Done
-- [x] New chain installed (SRAM XO Flattop)
-- [x] MTX ceramic brake pads — front and rear (1 ride)
-- [x] Barzo 29x2.4 TLR mounted front — sealant fresh
-- [x] Mezcal 29x2.4 TLR mounted rear
-- [x] Tire pressure set: Barzo 16psi / Mezcal 18psi
-- [x] Fork sag set — Pike Ultimate 130mm (63psi → 62psi)
-- [x] Rear shock set — Deluxe Ultimate (153psi)
-- [x] All bolts retorqued to spec
-- [x] Drivetrain clean — shifting best it's been
-- [x] Dropper post lubed
-- [x] Freehub lubed (Dumond Tech)
-- [x] Deep clean after Sun Valley mud ride
+- [ ] New chain installed (SRAM XO Flattop)
+- [ ] MTX ceramic brake pads — front and rear (1 ride)
+- [ ] Barzo 29x2.4 TLR mounted front — sealant fresh
+- [ ] Mezcal 29x2.4 TLR mounted rear
+- [ ] Tire pressure set: Barzo 16psi / Mezcal 18psi
+- [ ] Fork sag set — Pike Ultimate 130mm (63psi → 62psi)
+- [ ] Rear shock set — Deluxe Ultimate (153psi)
+- [ ] All bolts retorqued to spec
+- [ ] Drivetrain clean — shifting best it's been
+- [ ] Dropper post lubed
+- [ ] Freehub lubed (Dumond Tech)
+- [ ] Deep clean after Sun Valley mud ride
 
 ## Bike — This Week
 - [ ] Mechanic visit — chainstay guard secured, brake cable shortened
@@ -71,6 +71,7 @@
 ---
 
 ## Mechanical / Pit Bag (Renee)
+- [ ] Spare wheelset — tubeless tires mounted, staged at pit (not in bag)
 - [ ] Spare tubes x2
 - [ ] Tubeless plug kit
 - [ ] Sealant top-up bottle
@@ -83,7 +84,8 @@
 
 ## On-Bike Kit
 - [ ] Tubeless plugs
-- [ ] CO2 x1
+- [ ] Electric mini pump (primary)
+- [ ] CO2 x1 + inflator (backup)
 - [ ] Multi-tool
 - [ ] Quick link x1
 
@@ -103,11 +105,12 @@
 - [ ] Separate and label caffeine gels (max 3, laps 5–7)
 - [ ] Inventory layer kit — confirm all items present
 - [ ] Confirm pit bag contents against mechanical list above
+- [ ] Confirm spare wheelset loaded and tubeless tires mounted
 - [ ] Charge Garmin 540 fully
 - [ ] Charge AXS spare battery fully
 - [ ] Breakfast prep ready for 6:30am (burrito ingredients)
 - [ ] Review PitSync app and signal vocabulary with Andrew
-- [ ] Review one-word signals: GOOD / ADJUST / WATER / LAYERS / BATTERY / MECH
+- [ ] Review signals: GOOD (standard exchange) / ADJUST + what's needed / LAYERS / BATTERY / MECH
 
 ---
 
@@ -137,13 +140,14 @@
 ## Friday June 12 — Travel Day
 - [ ] Load bike on rack — confirm secure
 - [ ] Secure 4Runner cover
-- [ ] Load trailer — gear, nutrition, pit bag
+- [ ] Load trailer — gear, nutrition, pit bag, spare wheelset
 - [ ] Tool kit loaded
 - [ ] Depart — target Donnelly arrival 2:30pm
 - [ ] Hook up at Donnelly RV Park (full hookups)
 - [ ] Drive to JMR — packet pickup opens 5pm to dark
 - [ ] Claim pit spot at start/finish area
 - [ ] Set up triangle shade cloth
+- [ ] Stage spare wheelset at pit
 - [ ] Preview lap — ride slow, focus on Vandelay entry and lines
 - [ ] Note tightest corners and line choices on Vandelay
 - [ ] Back to Donnelly — dinner, early bed

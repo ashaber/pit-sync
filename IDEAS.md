@@ -75,8 +75,39 @@ Per-tab notes (feedback to organizer, notes for next year's race).
 
 ---
 
-### IDEA-009
-Race timeline as its own tab.  shows at least day before.  focus on nearest upcoming time and allow checklist behavior to mark timeline items completed.  Plan ahead that cyclocross races this fall will have 2 days racing.  race day timeline is offset based. plan will define offsets.  e.g. meal 3hr before race start.  warmup 55 min before race start.
+### IDEA-009 — Race timeline tab
+Race timeline as its own tab. Shows at least day before. Focus on nearest upcoming time and allow checklist behavior to mark timeline items completed. Plan ahead that cyclocross races this fall will have 2 days racing. Race day timeline is offset-based — plan defines offsets (e.g. meal 3hr before race start, warmup 55 min before race start).
+
+**Status: Deferred — not in current build. Needs to be included before race day.**
+
+---
+
+### IDEA-010 — Restructure signal form (from post-release feedback)
+Signal should be two modes, not six buttons:
+- **STANDARD EXCHANGE** (replaces GOOD): pre-fills large2 + gel
+- **ADJUST**: pre-fills large2 + gel (standard items stay checked), reveals adjustment checkboxes: WATER / LAYERS / BATTERY / MECH
+
+When ADJUST is selected, standard items remain pre-checked. Renee selects which adjustments apply on top.
+
+**Status: In scope — assign to CLI.**
+
+---
+
+### IDEA-011 — Returned bottle as visual scale (from post-release feedback)
+Replace returned checkboxes with a horizontal single-select scale:
+`Empty — 1/4 — 1/2 — 3/4 — Kept`
+Faster to tap, visually clearer. "Nothing back" can be left unselected.
+
+**Status: In scope — assign to CLI.**
+
+---
+
+### IDEA-012 — Rider condition scale (from post-release feedback)
+Add a 5-point rider observation field to the lap form:
+`😞 — 😕 — 😐 — 🙂 — 😊`
+Color-coded red → green. Captured per lap for post-race analysis.
+
+**Status: In scope — assign to CLI.**
 
 ---
 
@@ -86,3 +117,11 @@ Download all lap data and race overview as a single JSON file for post-race anal
 **Decision: In scope this week.**
 - One button in the lap tracker, visible after ≥1 lap logged
 - Export includes all lap records + race overview (count, avg, best, gel count)
+
+
+### ENH-lap-UI - tighten up view
+move stop and reset buttons small and to right of "PITSYNC <RACENAME>" (STOP).  
+reset button only shows when race is stopped, like a stopwatch  Reset clears the race
+Start button reappears if race is stopped 
+including removing laps.  Always show record lap on lap screen (no need for add lap button) - save lap records  Default to standard handup.  
+

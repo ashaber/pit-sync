@@ -6,6 +6,7 @@ import {
   getRaceStopped, setRaceStopped, clearRaceStopped,
   getRaceNotes, saveRaceNotes,
   getTabNotes, saveTabNotes,
+  getTimelineState, saveTimelineState, clearTimelineState,
 } from './storage.js';
 import {
   RACE_START_FIXED, RACE_DURATION_MS, COUNTDOWN_WINDOW,
@@ -14,13 +15,14 @@ import {
 } from './timer.js';
 import { CHECKLIST, buildDefaultClState, countChecklist } from './checklist.js';
 import { GIVEN_LABELS, RET_LABELS, calcLapStats, exportRaceData } from './laps.js';
+import { TIMELINE, buildDefaultTlState, findNextEvent } from './timeline.js';
 import { marked } from 'marked';
 import racePlanMd  from '../race-plan.md?raw';
 import raceBibleMd from '../race-bible.md?raw';
 
-let laps          = getLaps();
-let clState       = getClState();
-let lapFormOpen   = false;
+let laps         = getLaps();
+let clState      = getClState();
+let tlState      = getTimelineState();
 let capturedLapMs = 0;
 let timeAdjustMin = 0;
 
@@ -72,6 +74,41 @@ function renderChecklist() {
   document.getElementById('cl-total').textContent = total;
 }
 
+// ── Timeline ──────────────────────────────────────────────────────────────────
+
+function initTlState() {
+  if (tlState) return;
+  tlState = buildDefaultTlState();
+  saveTimelineState(tlState);
+}
+
+function toggleTlItem(id) {
+  tlState[id] = !tlState[id];
+  saveTimelineState(tlState);
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const body = document.getElementById('timeline-body');
+  let html = '';
+  TIMELINE.forEach(section => {
+    html += `<div class="tl-section"><div class="tl-section-title">${section.title}</div>`;
+    section.events.forEach(event => {
+      const done = !!tlState[event.id];
+      const cls = ['tl-item', done ? 'done' : '', event.isStart ? 'race-start' : ''].filter(Boolean).join(' ');
+      html += `<div class="${cls}" id="tl-${event.id}" onclick="toggleTlItem('${event.id}')">
+        <div class="tl-check">${done ? '✓' : ''}</div>
+        <div class="tl-content">
+          <div class="tl-label">${event.label}</div>
+          <div class="tl-time">${event.display}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  body.innerHTML = html;
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 
 function showTab(name) {
@@ -79,6 +116,13 @@ function showTab(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'timeline') {
+    const nextId = findNextEvent(new Date());
+    if (nextId) {
+      const el = document.getElementById(`tl-${nextId}`);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
+  }
 }
 
 // ── Race timer / pre-race UI ──────────────────────────────────────────────────
@@ -90,31 +134,46 @@ function startRaceNow() {
 }
 
 function stopRace() {
-  if (!confirm('Stop the race? Lap entry will be blocked until reset.')) return;
+  if (!confirm('Stop the race? Lap entry will be blocked until resumed.')) return;
   setRaceStopped();
-  if (lapFormOpen) closeLapForm();
+  renderLapTimerUI();
+}
+
+function resumeRace() {
+  clearRaceStopped();
   renderLapTimerUI();
 }
 
 function resetRace() {
-  if (!confirm('Reset race timer? This only resets the clock, not lap data.')) return;
+  if (!confirm('Reset timer to pre-race? Lap data is kept.')) return;
   clearManualStart();
   clearRaceStopped();
   renderLapTimerUI();
 }
 
-function renderLapTimerUI() {
-  const now      = new Date();
-  const start    = getRaceStart();
-  const prerace  = now < start;
-  const inWindow = (start - now) <= COUNTDOWN_WINDOW;
-  const manual   = !!getRawManualStart();
-  const stopped  = !!getRaceStopped();
+function clearRaceData() {
+  if (!confirm('Clear ALL race data? This removes all laps, notes, and resets the timer.')) return;
+  laps = [];
+  saveLaps(laps);
+  clearManualStart();
+  clearRaceStopped();
+  renderLaps();
+  renderLapTimerUI();
+  resetLapForm();
+}
 
-  document.getElementById('prerace-ui').classList.toggle('hidden', !(prerace && inWindow));
-  document.getElementById('stop-race-btn').classList.toggle('hidden', prerace || stopped);
-  document.getElementById('reset-race-btn').classList.toggle('hidden', !manual && !stopped);
-  document.getElementById('log-lap-btn').classList.toggle('hidden', (prerace && inWindow && !manual) || stopped);
+function renderLapTimerUI() {
+  const now     = new Date();
+  const start   = getRaceStart();
+  const prerace = now < start;
+  const manual  = !!getRawManualStart();
+  const stopped = !!getRaceStopped();
+  const racing  = (manual || !prerace) && !stopped;
+
+  document.getElementById('prerace-ui').classList.toggle('hidden', !prerace || manual);
+  document.getElementById('stopped-ui').classList.toggle('hidden', !stopped);
+  document.getElementById('stop-race-btn').classList.toggle('hidden', !racing);
+  document.getElementById('lap-form-container').classList.toggle('hidden', !racing);
 }
 
 function tickClock() {
@@ -154,7 +213,8 @@ function tickClock() {
     lapEl.className   = 'clock-value cv-green';
   }
 
-  if (lapFormOpen) {
+  const formEl = document.getElementById('lap-form-container');
+  if (formEl && !formEl.classList.contains('hidden')) {
     capturedLapMs = new Date() - getLapStartTime();
     updateTimeCaptureDisplay();
   }
@@ -162,23 +222,17 @@ function tickClock() {
 
 // ── Lap form ──────────────────────────────────────────────────────────────────
 
-function openLapForm() {
-  lapFormOpen   = true;
+function resetLapForm() {
   capturedLapMs = new Date() - getLapStartTime();
   timeAdjustMin = 0;
-  document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.signal-mode').forEach(b => b.classList.remove('selected'));
+  document.getElementById('adjust-options').classList.add('hidden');
   document.querySelectorAll('.check-opt').forEach(b => b.classList.remove('checked'));
+  document.querySelectorAll('.ret-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('lap-notes').value = '';
+  selectSignalMode('STANDARD');
   updateTimeCaptureDisplay();
-  document.getElementById('log-lap-btn').classList.add('hidden');
-  document.getElementById('lap-form-container').classList.remove('hidden');
-  document.getElementById('lap-form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function closeLapForm() {
-  lapFormOpen = false;
-  document.getElementById('lap-form-container').classList.add('hidden');
-  document.getElementById('log-lap-btn').classList.remove('hidden');
 }
 
 function updateTimeCaptureDisplay() {
@@ -186,15 +240,33 @@ function updateTimeCaptureDisplay() {
   document.getElementById('time-captured-display').textContent = formatMM(finalMs);
 }
 
-function toggleSignal(btn) {
-  btn.classList.toggle('selected');
-  if (btn.dataset.signal === 'GOOD' && btn.classList.contains('selected')) {
+function selectSignalMode(mode) {
+  const btn = document.querySelector(`.signal-mode[data-mode="${mode}"]`);
+  const isSelected = btn.classList.contains('selected');
+  document.querySelectorAll('.signal-mode').forEach(b => b.classList.remove('selected'));
+  document.getElementById('adjust-options').classList.add('hidden');
+  document.querySelectorAll('#adjust-options .check-opt').forEach(el => el.classList.remove('checked'));
+  if (!isSelected) {
+    btn.classList.add('selected');
     document.querySelectorAll('#given-grid .check-opt').forEach(el => el.classList.remove('checked'));
     ['large2', 'gel'].forEach(id => {
       const el = document.querySelector(`#given-grid [data-id="${id}"]`);
       if (el) el.classList.add('checked');
     });
+    if (mode === 'ADJUST') document.getElementById('adjust-options').classList.remove('hidden');
   }
+}
+
+function selectReturn(btn) {
+  const isSelected = btn.classList.contains('selected');
+  document.querySelectorAll('#returned-grid .ret-btn').forEach(b => b.classList.remove('selected'));
+  if (!isSelected) btn.classList.add('selected');
+}
+
+function selectCondition(btn) {
+  const isSelected = btn.classList.contains('selected');
+  document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('selected'));
+  if (!isSelected) btn.classList.add('selected');
 }
 
 function toggleCheck(el) { el.classList.toggle('checked'); }
@@ -204,25 +276,39 @@ function adjustTime(delta) {
   updateTimeCaptureDisplay();
 }
 
+const COND_EMOJI = ['', '😞', '😕', '😐', '🙂', '😊'];
+
 function saveLap() {
-  const now      = new Date();
-  const finalMs  = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
-  const signal   = [...document.querySelectorAll('.signal-btn.selected')].map(b => b.dataset.signal);
-  const given    = [...document.querySelectorAll('#given-grid .check-opt.checked')].map(el => el.dataset.id);
-  const returned = [...document.querySelectorAll('#returned-grid .check-opt.checked')].map(el => el.dataset.id);
-  const notes    = document.getElementById('lap-notes').value.trim();
+  const now     = new Date();
+  const finalMs = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
+
+  const modeBtn = document.querySelector('.signal-mode.selected');
+  const mode    = modeBtn ? modeBtn.dataset.mode : null;
+  let signal    = [];
+  if (mode === 'STANDARD') {
+    signal = ['STANDARD'];
+  } else if (mode === 'ADJUST') {
+    const adjustments = [...document.querySelectorAll('#adjust-options .check-opt.checked')].map(el => el.dataset.id);
+    signal = ['ADJUST', ...adjustments];
+  }
+
+  const given     = [...document.querySelectorAll('#given-grid .check-opt.checked')].map(el => el.dataset.id);
+  const returned  = [...document.querySelectorAll('#returned-grid .ret-btn.selected')].map(el => el.dataset.id);
+  const condBtn   = document.querySelector('.cond-btn.selected');
+  const condition = condBtn ? Number(condBtn.dataset.val) : null;
+  const notes     = document.getElementById('lap-notes').value.trim();
 
   laps.push({
     num: laps.length + 1,
     timeMs: finalMs,
     timeMin: Math.round(finalMs / 60000),
-    signal, given, returned, notes,
+    signal, given, returned, condition, notes,
     logged: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
   });
 
   saveLaps(laps);
   setLapStartEpoch(now.getTime());
-  closeLapForm();
+  resetLapForm();
   renderLaps();
 }
 
@@ -265,12 +351,14 @@ function renderLaps() {
     const retStr     = lap.returned.map(id => RET_LABELS[id] || id).join(', ') || '—';
     const signals    = Array.isArray(lap.signal) ? lap.signal : (lap.signal ? [lap.signal] : []);
     const signalStr  = signals.join(' · ');
+    const condStr    = lap.condition ? COND_EMOJI[lap.condition] : '';
     html += `<div class="lap-row">
       <div class="lap-num">${lap.num}</div>
       <div class="lap-details">
         <div class="lap-time-row">
           <div class="lap-time">${timeStr}</div>
           ${signalStr ? `<div class="lap-signal">${signalStr}</div>` : ''}
+          ${condStr ? `<div class="lap-cond">${condStr}</div>` : ''}
         </div>
         <div class="lap-meta">Given: ${givenStr}</div>
         <div class="lap-meta">Returned: ${retStr}</div>
@@ -309,16 +397,19 @@ Object.assign(window, {
   showTab,
   toggleClItem,
   resetChecklist,
-  openLapForm,
-  closeLapForm,
+  toggleTlItem,
   saveLap,
   deleteLap,
-  toggleSignal,
+  selectSignalMode,
   toggleCheck,
+  selectReturn,
+  selectCondition,
   adjustTime,
   startRaceNow,
   stopRace,
+  resumeRace,
   resetRace,
+  clearRaceData,
   exportData,
 });
 
@@ -326,8 +417,11 @@ Object.assign(window, {
 
 initClState();
 renderChecklist();
+initTlState();
+renderTimeline();
 renderLaps();
 renderLapTimerUI();
+resetLapForm();
 setInterval(tickClock, 1000);
 tickClock();
 
