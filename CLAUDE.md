@@ -29,13 +29,18 @@ Follows the same patterns as `ashaber/mtb-skills`:
 
 ## Current State
 
-Phase 1.5 — modular ES modules, Vite build, 51 unit tests. Deployed to GitHub Pages via CI.
+Phase 1.5+ — modular ES modules, Vite build, 62 unit tests. Deployed to GitHub Pages via CI.
 
 Core features implemented:
-- Five-tab navigation: Lap Tracker / Checklist / Pacing / Race Plan / Race Bible
-- Checklist with localStorage persistence, progress tracking, reset
-- Pacing reference card (read-only) — power/HR targets, signal legend, nutrition protocol
-- Lap tracker: timer, manual race start, lap entry form, lap history, summary stats
+- Five-tab navigation: Laps / Checklist / Plan / Timeline / Bible
+- Checklist with localStorage persistence, progress tracking, reset, checked items float to bottom
+- Race Plan tab renders race-plan.md via marked.js (includes all pacing/nutrition/signal reference)
+- Race Bible tab renders race-bible.md via marked.js
+- Lap tracker: timer, always-visible form (STANDARD pre-selected), stop race, manual start/stop/reset
+- Lap form: STANDARD/ADJUST signal modes, returned bottle scale, rider condition scale (😞→😊), time adjust
+- Race Timeline tab: offset-based events (Friday travel + prep, Saturday morning, post-race), tap to mark complete
+- JSON export of lap data
+- Per-tab notes (Lap Tracker, Checklist, Plan, Bible)
 - All data persists via localStorage across sessions
 - Mobile-first dark UI, works offline
 
@@ -51,6 +56,7 @@ Core features implemented:
 9to5_2026_manual_start  — epoch ms string: manual race start override
 9to5_2026_race_stopped  — epoch ms string: manual race stop time (set by stop button)
 9to5_2026_race_notes    — string: free-text overall race notes
+9to5_2026_timeline      — object: { [eventId]: boolean } — timeline item checked state
 ```
 
 Note: keys are race-specific. When generalizing, migrate to `race_pit_*` namespace with a race_id prefix (Phase 2).
@@ -134,15 +140,18 @@ see race-plan.md for nutrition protocol
 ## Roadmap
 
 ### Phase 0.5 — Enhancements (pre-race, this week)
-- [x] ENH-001: Manual race start button + pre-race countdown (within 30 min of start)
+- [x] ENH-001: Manual race start button + pre-race countdown
 - [x] Build tooling: Vite + Vitest, modular ES modules, CI gate
-- [ ] IDEA-001: Manual race stop button — blocks lap entry when stopped
-- [ ] IDEA-002/003: race-plan.md + race-bible.md rendered via marked.js, links active
-- [ ] IDEA-005: Returned bottle scale {empty|1/4|1/2|3/4|kept|nothing}, multi-select signals
-- [ ] IDEA-006: Checked checklist items float to bottom of their section
-- [ ] IDEA-007: Overall race notes text area (Lap Tracker tab, localStorage)
-- [ ] IDEA-008: Per-tab notes on Plan/Bible/Checklist — mobile text area, localStorage per tab
-- [ ] ENH-JSON: JSON export button (lap data + race overview)
+- [x] IDEA-001: Manual race stop button — blocks lap entry when stopped
+- [x] IDEA-002/003: race-plan.md + race-bible.md rendered via marked.js, links active
+- [x] IDEA-005/010/011: STANDARD/ADJUST signal form, returned bottle scale, multi-select
+- [x] IDEA-006: Checked checklist items float to bottom of their section
+- [x] IDEA-007: Overall race notes text area (Lap Tracker tab, localStorage)
+- [x] IDEA-008: Per-tab notes on Plan/Bible/Checklist
+- [x] IDEA-009: Race Timeline tab — Friday/Saturday/post-race events, tap to complete
+- [x] IDEA-012: Rider condition scale (😞→😊) on lap form
+- [x] ENH-JSON: JSON export button (lap data + race overview)
+- [x] ENH-lap-UI: Stop inline in header, always-visible lap form, STANDARD default, stopped-ui
 
 ### Phase 1 (race-ready baseline — complete)
 - [x] Checklist with persistence
@@ -182,6 +191,7 @@ pit-sync/
     timer.js          ← race timing, getRaceStart/End, formatHMS/HM/MM
     checklist.js      ← CHECKLIST data, buildDefaultClState, countChecklist
     laps.js           ← GIVEN_LABELS, RET_LABELS, calcLapStats
+    timeline.js       ← TIMELINE data, buildDefaultTlState, findNextEvent
   tests/
     unit/             ← vitest unit tests (51 tests)
   race-plan.md        ← race plan source — edit here, rebuild to update Plan tab

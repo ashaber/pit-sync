@@ -22,3 +22,8 @@ export const getRaceNotes        = () => localStorage.getItem(LS_RNOTES) || '';
 export const saveRaceNotes       = s => localStorage.setItem(LS_RNOTES, s);
 export const getTabNotes         = tab => localStorage.getItem(`9to5_2026_notes_${tab}`) || '';
 export const saveTabNotes        = (tab, s) => localStorage.setItem(`9to5_2026_notes_${tab}`, s);
+
+const LS_TIMELINE = '9to5_2026_timeline';
+export const getTimelineState  = () => JSON.parse(localStorage.getItem(LS_TIMELINE) || 'null');
+export const saveTimelineState = s => localStorage.setItem(LS_TIMELINE, JSON.stringify(s));
+export const clearTimelineState = () => localStorage.removeItem(LS_TIMELINE);

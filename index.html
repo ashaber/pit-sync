@@ -36,14 +36,32 @@
       top: 0;
       z-index: 20;
     }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
     .header-title {
       font-size: 12px;
       font-weight: 600;
       color: var(--text2);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      margin-bottom: 8px;
     }
+    #stop-race-btn {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      padding: 5px 14px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #stop-race-btn:active { opacity: 0.7; }
     .clock-row { display: flex; gap: 6px; }
     .clock-item {
       flex: 1;
@@ -116,23 +134,6 @@
     /* ── Laps Tab ── */
     .laps-hero { padding: 14px 14px 0; }
 
-    #log-lap-btn {
-      width: 100%;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 14px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      padding: 20px;
-      cursor: pointer;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-      display: block;
-    }
-    #log-lap-btn:active { opacity: 0.82; }
-
     /* Lap Form */
     #lap-form-container {
       background: var(--surface);
@@ -151,10 +152,19 @@
       margin-bottom: 8px;
     }
 
-    .signal-grid {
+    .signal-mode-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .signal-sub {
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.7;
+      letter-spacing: 0;
+      text-transform: none;
+      display: block;
+      margin-top: 3px;
     }
     .signal-btn {
       background: var(--surface2);
@@ -174,6 +184,51 @@
       color: var(--accent);
     }
     .signal-btn:active { opacity: 0.7; }
+
+    .return-scale {
+      display: flex;
+      gap: 6px;
+    }
+    .ret-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 14px 2px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .ret-btn.selected {
+      border-color: var(--accent);
+      background: rgba(255,159,10,0.14);
+      color: var(--accent);
+    }
+    .ret-btn:active { opacity: 0.7; }
+
+    .condition-scale {
+      display: flex;
+      gap: 6px;
+    }
+    .cond-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      font-size: 22px;
+      padding: 10px 2px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .cond-btn.selected {
+      border-color: var(--green);
+      background: rgba(48,209,88,0.12);
+    }
+    .cond-btn:active { opacity: 0.7; }
+
+    .lap-cond { font-size: 16px; line-height: 1; }
 
     .checkbox-grid {
       display: grid;
@@ -280,16 +335,6 @@
       letter-spacing: 0.04em;
     }
     .btn-save:active { opacity: 0.85; }
-    .btn-cancel {
-      background: var(--surface2);
-      color: var(--text);
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      padding: 15px 20px;
-      cursor: pointer;
-    }
 
     /* Summary stats */
     .summary-stats {
@@ -554,17 +599,36 @@
 
     .hidden { display: none !important; }
 
-    /* ── Stop button ── */
-    #stop-race-btn {
-      background: none;
-      border: 1px solid var(--red);
+    /* ── Stopped UI ── */
+    .stopped-banner {
+      text-align: center;
       color: var(--red);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px 0 10px;
+    }
+    .stopped-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .stopped-actions button {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text2);
       border-radius: 10px;
-      font-size: 12px;
-      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 6px;
       cursor: pointer;
-      display: block;
-      margin: 0 auto 8px;
+    }
+    .stopped-actions button:active { opacity: 0.7; }
+    .btn-clear-data {
+      border-color: var(--red) !important;
+      color: var(--red) !important;
     }
 
     /* ── Export button ── */
@@ -664,17 +728,6 @@
       display: block;
     }
     #start-race-btn:active { opacity: 0.82; }
-    #reset-race-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text2);
-      border-radius: 10px;
-      font-size: 12px;
-      padding: 6px 14px;
-      cursor: pointer;
-      display: block;
-      margin: 0 auto 14px;
-    }
     .countdown-banner {
       background: var(--surface);
       border-radius: 14px;
@@ -684,6 +737,49 @@
     }
     .countdown-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
     .countdown-time { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); letter-spacing: -0.02em; }
+
+    /* ── Timeline tab ── */
+    .tl-section { margin-bottom: 4px; }
+    .tl-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 14px 16px 6px;
+    }
+    .tl-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tl-item:active { background: var(--surface2); }
+    .tl-item.done .tl-label { text-decoration: line-through; color: var(--text2); }
+    .tl-item.done .tl-time { color: var(--border); }
+    .tl-item.race-start { background: rgba(255,159,10,0.06); border-left: 3px solid var(--accent); }
+    .tl-item.race-start .tl-label { color: var(--accent); font-weight: 700; }
+    .tl-check {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+    }
+    .tl-item.done .tl-check { border-color: var(--green); background: rgba(48,209,88,0.1); }
+    .tl-content { flex: 1; min-width: 0; }
+    .tl-label { font-size: 14px; font-weight: 500; line-height: 1.3; }
+    .tl-time { font-size: 11px; color: var(--text2); margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -691,7 +787,10 @@
 
   <!-- ── Race Header / Clock ── -->
   <header id="race-header">
-    <div class="header-title">PitSync — 9 to 5 @ JMR 2026</div>
+    <div class="header-top">
+      <div class="header-title">PitSync — 9 to 5 @ JMR 2026</div>
+      <button id="stop-race-btn" class="hidden" onclick="stopRace()">STOP</button>
+    </div>
     <div class="clock-row">
       <div class="clock-item">
         <div class="clock-label">Elapsed</div>
@@ -719,22 +818,33 @@
         </div>
         <button id="start-race-btn" onclick="startRaceNow()">Start Race Now</button>
       </div>
-      <button id="stop-race-btn" class="hidden" onclick="stopRace()">Stop Race</button>
-      <button id="reset-race-btn" class="hidden" onclick="resetRace()">Reset race timer</button>
 
-      <button id="log-lap-btn" onclick="openLapForm()">+ Log Lap</button>
+      <div id="stopped-ui" class="hidden">
+        <div class="stopped-banner">Race Stopped</div>
+        <div class="stopped-actions">
+          <button onclick="resumeRace()">Resume Race</button>
+          <button onclick="resetRace()">Reset Timer</button>
+          <button class="btn-clear-data" onclick="clearRaceData()">Clear All Data</button>
+        </div>
+      </div>
 
       <div id="lap-form-container" class="hidden">
 
         <div class="form-section">
-          <div class="form-section-title">Signal (Andrew's call)</div>
-          <div class="signal-grid">
-            <button class="signal-btn" data-signal="GOOD"    onclick="toggleSignal(this)">GOOD</button>
-            <button class="signal-btn" data-signal="ADJUST"  onclick="toggleSignal(this)">ADJUST</button>
-            <button class="signal-btn" data-signal="WATER"   onclick="toggleSignal(this)">WATER</button>
-            <button class="signal-btn" data-signal="LAYERS"  onclick="toggleSignal(this)">LAYERS</button>
-            <button class="signal-btn" data-signal="BATTERY" onclick="toggleSignal(this)">BATTERY</button>
-            <button class="signal-btn" data-signal="MECH"    onclick="toggleSignal(this)">MECH</button>
+          <div class="form-section-title">Signal</div>
+          <div class="signal-mode-grid">
+            <button class="signal-btn signal-mode" data-mode="STANDARD" onclick="selectSignalMode('STANDARD')">STANDARD<span class="signal-sub">Large 2sc + gel</span></button>
+            <button class="signal-btn signal-mode" data-mode="ADJUST"   onclick="selectSignalMode('ADJUST')">ADJUST<span class="signal-sub">Standard + extras</span></button>
+          </div>
+        </div>
+
+        <div class="form-section hidden" id="adjust-options">
+          <div class="form-section-title">Adjustments</div>
+          <div class="checkbox-grid">
+            <label class="check-opt" data-id="WATER"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Water</span></label>
+            <label class="check-opt" data-id="LAYERS"  onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Layers</span></label>
+            <label class="check-opt" data-id="BATTERY" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Battery</span></label>
+            <label class="check-opt" data-id="MECH"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Mech</span></label>
           </div>
         </div>
 
@@ -751,14 +861,24 @@
         </div>
 
         <div class="form-section">
-          <div class="form-section-title">Returned</div>
-          <div class="checkbox-grid" id="returned-grid">
-            <label class="check-opt" data-id="empty"   onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Empty</span></label>
-            <label class="check-opt" data-id="1/4"     onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">1/4 full</span></label>
-            <label class="check-opt" data-id="1/2"     onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">1/2 full</span></label>
-            <label class="check-opt" data-id="3/4"     onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">3/4 full</span></label>
-            <label class="check-opt" data-id="kept"    onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Kept on bike</span></label>
-            <label class="check-opt" data-id="nothing" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-opt-label">Nothing back</span></label>
+          <div class="form-section-title">Returned <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">— unselected = nothing back</span></div>
+          <div class="return-scale" id="returned-grid">
+            <button class="ret-btn" data-id="empty" onclick="selectReturn(this)">Empty</button>
+            <button class="ret-btn" data-id="1/4"   onclick="selectReturn(this)">1/4</button>
+            <button class="ret-btn" data-id="1/2"   onclick="selectReturn(this)">1/2</button>
+            <button class="ret-btn" data-id="3/4"   onclick="selectReturn(this)">3/4</button>
+            <button class="ret-btn" data-id="kept"  onclick="selectReturn(this)">Kept</button>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">Rider Condition</div>
+          <div class="condition-scale" id="condition-scale">
+            <button class="cond-btn" data-val="1" onclick="selectCondition(this)">😞</button>
+            <button class="cond-btn" data-val="2" onclick="selectCondition(this)">😕</button>
+            <button class="cond-btn" data-val="3" onclick="selectCondition(this)">😐</button>
+            <button class="cond-btn" data-val="4" onclick="selectCondition(this)">🙂</button>
+            <button class="cond-btn" data-val="5" onclick="selectCondition(this)">😊</button>
           </div>
         </div>
 
@@ -777,7 +897,6 @@
         </div>
 
         <div class="form-actions">
-          <button class="btn-cancel" onclick="closeLapForm()">Cancel</button>
           <button class="btn-save" onclick="saveLap()">Save Lap</button>
         </div>
 
@@ -815,83 +934,6 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════ PACING TAB ══════════════════════════════ -->
-  <div class="tab-panel" id="panel-pacing">
-    <div class="pacing-content">
-
-      <div class="pace-card">
-        <div class="pace-card-title">Pit Signals</div>
-        <div class="signal-ref-row"><div class="signal-word">GOOD</div><div class="signal-action">Large 2sc + gel, send out</div></div>
-        <div class="signal-ref-row"><div class="signal-word">ADJUST</div><div class="signal-action">Large 2sc, no gel</div></div>
-        <div class="signal-ref-row"><div class="signal-word">WATER</div><div class="signal-action">Plain water only, no gel</div></div>
-        <div class="signal-ref-row"><div class="signal-word">LAYERS</div><div class="signal-action">Add/remove layer from kit bag</div></div>
-        <div class="signal-ref-row"><div class="signal-word">BATTERY</div><div class="signal-action">Swap AXS derailleur battery</div></div>
-        <div class="signal-ref-row"><div class="signal-word">MECH</div><div class="signal-action">Tools out</div></div>
-      </div>
-
-      <div class="pace-card">
-        <div class="pace-card-title">Pit Rules</div>
-        <div class="pit-rule">Target stop: <strong>under 90 seconds</strong> unless mechanical</div>
-        <div class="pit-rule">Next bottle ready before Andrew arrives</div>
-        <div class="pit-rule">Don't ask questions unless athlete initiates</div>
-        <div class="pit-rule">Renee may call back: <strong>Easy</strong> or <strong>Good</strong></div>
-        <div class="pit-rule">Debrief after lap 4 only if needed — silence is good</div>
-      </div>
-
-      <div class="pace-card">
-        <div class="pace-card-title">Lap Targets</div>
-        <table class="pace-table">
-          <thead><tr><th>Lap</th><th>Target</th><th>Notes</th></tr></thead>
-          <tbody>
-            <tr><td>1</td><td>Controlled</td><td>No holeshot — controlled from gun</td></tr>
-            <tr><td>2</td><td>65–70 min</td><td>Resist early surge</td></tr>
-            <tr><td>3–5</td><td>65–70 min</td><td>Race rhythm, protect these</td></tr>
-            <tr><td>6–7</td><td>68–75 min</td><td>Accept fade, HR leads</td></tr>
-            <tr><td>8</td><td>Everything</td><td>Negative split goal</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="pace-card">
-        <div class="pace-card-title">Nutrition Protocol</div>
-        <div class="nutr-row"><span class="nutr-cond">Normal</span><span class="nutr-action">Large 2sc + gel</span></div>
-        <div class="nutr-row"><span class="nutr-cond">Gut warning</span><span class="nutr-action">Large 2sc, no gel</span></div>
-        <div class="nutr-row"><span class="nutr-cond">Gut distress</span><span class="nutr-action">Plain water, no gel</span></div>
-        <div class="nutr-row"><span class="nutr-cond">Recovery lap</span><span class="nutr-action">Resume normal</span></div>
-        <div class="nutr-row"><span class="nutr-cond" style="color:var(--accent);font-weight:700">Caff gels</span><span class="nutr-action" style="color:var(--accent)">Max 3 — laps 5–7 only</span></div>
-      </div>
-
-      <div class="pace-card">
-        <div class="pace-card-title">Power &amp; HR Zones</div>
-        <table class="pace-table">
-          <thead><tr><th>Terrain</th><th>Power</th><th>HR</th></tr></thead>
-          <tbody>
-            <tr><td>Sustained climb</td><td>205–220W</td><td>Z3, cap Z3.9</td></tr>
-            <tr><td>Punchy steep</td><td>≤270W</td><td>Z4 briefly</td></tr>
-            <tr><td>Flat / rolling</td><td>150–170W</td><td>Z2.5–Z3</td></tr>
-            <tr><td>Descent / Vandelay</td><td>Soft pedal</td><td>Z2 or below</td></tr>
-          </tbody>
-        </table>
-        <div class="pace-note">FTP 277W | LTHR 172bpm | Garmin: 3s power / lap avg / HR zone / lap timer</div>
-      </div>
-
-      <div class="pace-card">
-        <div class="pace-card-title">Layers Protocol</div>
-        <table class="pace-table">
-          <thead><tr><th>Item</th><th>Deploy When</th></tr></thead>
-          <tbody>
-            <tr><td>Wind vest</td><td>Temperature drops, pre-storm sky</td></tr>
-            <tr><td>Arm warmers</td><td>Sustained cloud cover, cold descents</td></tr>
-            <tr><td>Rain jacket</td><td>Rain starting or imminent</td></tr>
-            <tr><td>Light gloves</td><td>Hands losing feel on descents</td></tr>
-          </tbody>
-        </table>
-        <div class="pace-callout">Put layers on one lap early. Remove one lap early. Don't wait until cold.</div>
-      </div>
-
-    </div>
-  </div>
-
   <!-- ══════════════════════════════ RACE PLAN TAB ══════════════════════════════ -->
   <div class="tab-panel" id="panel-plan">
     <div id="plan-content" class="static-content"></div>
@@ -899,6 +941,11 @@
       <div class="notes-label">Plan Notes</div>
       <textarea class="notes-textarea" id="notes-plan" placeholder="Notes for next race, changes to the plan..." rows="3"></textarea>
     </div>
+  </div>
+
+  <!-- ══════════════════════════════ TIMELINE TAB ══════════════════════════════ -->
+  <div class="tab-panel" id="panel-timeline">
+    <div id="timeline-body"></div>
   </div>
 
   <!-- ══════════════════════════════ RACE BIBLE TAB ══════════════════════════════ -->
@@ -920,13 +967,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
       Check
     </button>
-    <button class="nav-btn" id="nav-pacing" onclick="showTab('pacing')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      Pace
-    </button>
     <button class="nav-btn" id="nav-plan" onclick="showTab('plan')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Plan
+    </button>
+    <button class="nav-btn" id="nav-timeline" onclick="showTab('timeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Timeline
     </button>
     <button class="nav-btn" id="nav-bible" onclick="showTab('bible')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>

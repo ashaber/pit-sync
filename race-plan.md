@@ -21,6 +21,39 @@
 
 ---
 
+## Pit Handoff Protocol
+
+### Standard Exchange
+Every lap unless Andrew signals otherwise.
+
+| Item | Detail |
+|------|--------|
+| Bottle | 1 large — Formula 369, 2 scoops |
+| Gel | 1 Maurten gel (regular) |
+
+**Always staged and ready before Andrew arrives.**
+
+### Always Ready at Pit (Staged Separately)
+- Extra plain water bottle
+- Extra gel (regular)
+- Caffeine gel (laps 5–7 only — labeled, staged separately)
+
+### Signal Vocabulary (Andrew → Renee)
+> **"GOOD"** is the verbal shorthand for **standard exchange** — it means *execute the plan*, not a report on how Andrew feels physically.
+
+| Andrew Says | Meaning | Renee Does |
+|-------------|---------|------------|
+| **GOOD** | Standard exchange | Large 2sc + gel — standard handoff |
+| **ADJUST** | Modify this lap | Standard items + Andrew specifies what else (water, layers, battery, tools) |
+| *(silence / nod)* | Same as GOOD | Execute standard handoff |
+
+*Note: App records STANDARD (app label for GOOD) or ADJUST + what was adjusted. Verbal shorthand and app label are intentionally different — GOOD is natural to shout, STANDARD is unambiguous in data.*
+
+### Pit Rules
+- Renee has next lap bottle ready before Andrew arrives
+- please offer encouragement - your insights are always good
+---
+
 ## Course
 - **Distance:** 9.64 miles per lap
 - **Climbing:** 1,369ft per lap
@@ -28,39 +61,6 @@
 - **Surface:** Doubletrack and singletrack, fast and flowy
 - **Key feature:** Vandelay trail at end of lap — tight technical turns, added 2026. Rides easy fresh, consequential when fatigued.
 - **Lap must finish before 5:00pm to count**
-
----
-
-## Logistics
-
-### Friday June 12
-| Time | Action |
-|------|--------|
-| ~2:30pm | Arrive Donnelly RV Park (full hookups) |
-| 5:00pm | Drive to JMR — packet pickup opens 5pm to dark |
-| On arrival | Set up pit spot at start/finish area |
-| Evening | Preview lap — focus on Vandelay entry and lines |
-| Night | Back to Donnelly — real dinner, early bed |
-
-### Saturday June 13
-| Time | Action |
-|------|--------|
-| 6:00am | Wake up |
-| 6:30am | Breakfast burrito (4 eggs, meat, rice, 2 tortillas) |
-| 7:15am | Depart Donnelly (~30 min to venue) |
-| 7:45am | Arrive JMR — final pit setup |
-| 8:00–8:45am | Warmup: easy spin, 2–3 x 30sec openers at ~220W |
-| 8:50am | Stage |
-| 9:00am | Race start (no LeMans run) |
-| 5:00pm | Race end — all laps completed by 5pm count |
-| 5:30pm | Podium + raffle + dinner at start/finish |
-
-### Venue Notes
-- No trailers on site — day trip from Donnelly
-- No campfires
-- 200 entry cap — confirmed registered
-- Dinner included (registered before June 7 ✓) — Renee included
-- Pit zone is on course at start/finish
 
 ---
 
@@ -118,39 +118,17 @@
 
 ---
 
-## Pit Communication
-
-### One-Word Signals (athlete → Renee)
-| Signal | Renee Action |
-|--------|-------------|
-| **GOOD** | Large bottle 2sc + gel, send out |
-| **ADJUST** | Large bottle 2sc, no gel |
-| **WATER** | Plain water only, no gel |
-| **LAYERS** | Add/remove layer per kit bag |
-| **BATTERY** | Swap AXS derailleur battery |
-| **MECH** | Tools out |
-
-### Pit Rules
-- Renee has next lap bottle ready before athlete arrives
-- Renee does not ask questions unless athlete initiates
-- Target pit time: under 90 seconds unless mechanical
-- Renee may call one word back: **Easy** or **Good** — athlete's call to act on it
-- Debrief after lap 4 only if needed — silence is good
-
-### Pre-Race Bottle Prep (Renee, Friday night)
-- Pre-mix all bottles, label by type: Large-2sc / Water
-- Count gels — separate caffeine gels
-- Inventory layer kit: wind vest, arm warmers, rain jacket, light gloves
-- Confirm pit bag contents
-
----
-
 ## Layers Protocol
 **Lesson from 2025: you froze when snow hit lap 5. Don't repeat.**
 
 - Renee reads weather proactively — offers layer at next pit
 - Put layers on one lap early. Remove one lap early.
 - Don't wait until cold.
+
+### Layer Change Rules
+- **Andrew removes a layer at pit:** Renee confirms Andrew is still carrying at least one layer before he departs. If he's stripping down to race kit, Renee offers to keep one item staged on the bike or in a pocket.
+- **Andrew requests additional layer:** Renee checks the kit bag has a backup before handing anything over. Do not empty the bag — Andrew may need more later.
+- **Goal:** Andrew always leaves the pit with appropriate layers for conditions. Kit bag always has at least one item remaining.
 
 | Item | Deploy When |
 |------|------------|
@@ -164,6 +142,7 @@
 ## Mechanical Kit
 
 ### Renee's Pit Bag
+- **Spare wheelset** (tubeless tires mounted) — staged at pit, not in bag
 - Spare tubes x2
 - Tubeless plug kit + sealant top-up
 - CO2 x3 + inflator
@@ -175,9 +154,17 @@
 
 ### On-Bike
 - Tubeless plugs
-- CO2 x1
+- Electric mini pump (primary)
+- CO2 x1 + inflator (backup)
 - Multi-tool
 - Quick link x1
+
+### Spare Wheels at Pit
+Stage a spare wheelset (tubeless tires mounted) at the pit. Deploy if:
+- Sidewall tear that plugs can't seal
+- Loss of traction confidence — wrong tire for conditions
+
+Wheel swap is fast (~1 min). No weight penalty since it stays at the pit. Tubeless plugs on-bike handle small punctures; spare wheel is the escalation path.
 
 ---
 
@@ -198,7 +185,7 @@
 1. **Lap 2** — controlled start, no holeshot unless the steep climb chaos is real
 2. **Vandelay** — tight turns at end of lap when fatigued. Descent is recovery, not a time trial. Scout it Friday evening.
 3. **Gut signal** — act at first sign, plain water, reset. Solved protocol from 2025.
-4. **Layers** — one lap early beats freezing for three laps
+4. **Layers** — one lap early beats freezing for three laps. Always leave with layers.
 5. **Lap 8** — everything left, negative split is the goal
 6. **Pit time** — under 90 seconds. Renee runs the pit, trust her.
 
