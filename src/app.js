@@ -3,6 +3,9 @@ import {
   getClState, saveClState, clearClState,
   setLapStartEpoch,
   setManualStartEpoch, clearManualStart, getRawManualStart,
+  getRaceStopped, setRaceStopped, clearRaceStopped,
+  getRaceNotes, saveRaceNotes,
+  getTabNotes, saveTabNotes,
 } from './storage.js';
 import {
   RACE_START_FIXED, RACE_DURATION_MS, COUNTDOWN_WINDOW,
@@ -10,7 +13,10 @@ import {
   formatHMS, formatHM, formatMM,
 } from './timer.js';
 import { CHECKLIST, buildDefaultClState, countChecklist } from './checklist.js';
-import { GIVEN_LABELS, RET_LABELS, calcLapStats } from './laps.js';
+import { GIVEN_LABELS, RET_LABELS, calcLapStats, exportRaceData } from './laps.js';
+import { marked } from 'marked';
+import racePlanMd  from '../race-plan.md?raw';
+import raceBibleMd from '../race-bible.md?raw';
 
 let laps          = getLaps();
 let clState       = getClState();
@@ -45,12 +51,20 @@ function renderChecklist() {
   const { total, done } = countChecklist(CHECKLIST, clState);
   let html = '';
   CHECKLIST.forEach(section => {
+    const unchecked = section.items.filter(item => !clState[item.id]);
+    const checked   = section.items.filter(item =>  clState[item.id]);
     html += `<div class="checklist-section"><div class="section-header">${section.title}</div>`;
-    section.items.forEach(item => {
-      const checked = clState[item.id];
-      html += `<div class="checklist-item${checked ? ' done' : ''}" onclick="toggleClItem('${item.id}')">`;
+    unchecked.forEach(item => {
+      html += `<div class="checklist-item" onclick="toggleClItem('${item.id}')">`;
       html += `<div class="cl-check"></div><div class="cl-text">${item.text}</div></div>`;
     });
+    if (checked.length) {
+      if (unchecked.length) html += `<div class="cl-done-divider">Completed</div>`;
+      checked.forEach(item => {
+        html += `<div class="checklist-item done" onclick="toggleClItem('${item.id}')">`;
+        html += `<div class="cl-check"></div><div class="cl-text">${item.text}</div></div>`;
+      });
+    }
     html += `</div>`;
   });
   body.innerHTML = html;
@@ -75,9 +89,17 @@ function startRaceNow() {
   renderLapTimerUI();
 }
 
+function stopRace() {
+  if (!confirm('Stop the race? Lap entry will be blocked until reset.')) return;
+  setRaceStopped();
+  if (lapFormOpen) closeLapForm();
+  renderLapTimerUI();
+}
+
 function resetRace() {
   if (!confirm('Reset race timer? This only resets the clock, not lap data.')) return;
   clearManualStart();
+  clearRaceStopped();
   renderLapTimerUI();
 }
 
@@ -87,9 +109,12 @@ function renderLapTimerUI() {
   const prerace  = now < start;
   const inWindow = (start - now) <= COUNTDOWN_WINDOW;
   const manual   = !!getRawManualStart();
+  const stopped  = !!getRaceStopped();
+
   document.getElementById('prerace-ui').classList.toggle('hidden', !(prerace && inWindow));
-  document.getElementById('reset-race-btn').classList.toggle('hidden', !manual);
-  document.getElementById('log-lap-btn').classList.toggle('hidden', prerace && inWindow && !manual);
+  document.getElementById('stop-race-btn').classList.toggle('hidden', prerace || stopped);
+  document.getElementById('reset-race-btn').classList.toggle('hidden', !manual && !stopped);
+  document.getElementById('log-lap-btn').classList.toggle('hidden', (prerace && inWindow && !manual) || stopped);
 }
 
 function tickClock() {
@@ -161,15 +186,15 @@ function updateTimeCaptureDisplay() {
   document.getElementById('time-captured-display').textContent = formatMM(finalMs);
 }
 
-function selectSignal(btn) {
-  document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.querySelectorAll('#given-grid .check-opt').forEach(el => el.classList.remove('checked'));
-  const auto = { GOOD: ['large2', 'gel'], ADJUST: ['large2'], WATER: ['water'], LAYERS: [], BATTERY: [], MECH: [] };
-  (auto[btn.dataset.signal] || []).forEach(id => {
-    const el = document.querySelector(`#given-grid [data-id="${id}"]`);
-    if (el) el.classList.add('checked');
-  });
+function toggleSignal(btn) {
+  btn.classList.toggle('selected');
+  if (btn.dataset.signal === 'GOOD' && btn.classList.contains('selected')) {
+    document.querySelectorAll('#given-grid .check-opt').forEach(el => el.classList.remove('checked'));
+    ['large2', 'gel'].forEach(id => {
+      const el = document.querySelector(`#given-grid [data-id="${id}"]`);
+      if (el) el.classList.add('checked');
+    });
+  }
 }
 
 function toggleCheck(el) { el.classList.toggle('checked'); }
@@ -182,7 +207,7 @@ function adjustTime(delta) {
 function saveLap() {
   const now      = new Date();
   const finalMs  = Math.max(0, capturedLapMs - timeAdjustMin * 60000);
-  const signal   = document.querySelector('.signal-btn.selected')?.dataset.signal || '';
+  const signal   = [...document.querySelectorAll('.signal-btn.selected')].map(b => b.dataset.signal);
   const given    = [...document.querySelectorAll('#given-grid .check-opt.checked')].map(el => el.dataset.id);
   const returned = [...document.querySelectorAll('#returned-grid .check-opt.checked')].map(el => el.dataset.id);
   const notes    = document.getElementById('lap-notes').value.trim();
@@ -214,14 +239,17 @@ function deleteLap(num) {
 function renderLaps() {
   const container = document.getElementById('lap-history');
   const statsEl   = document.getElementById('summary-stats');
+  const exportBtn = document.getElementById('export-btn');
 
   if (!laps.length) {
     container.innerHTML = '<div class="no-laps">No laps logged yet.<br>Race starts 9:00am June 13.</div>';
     statsEl.classList.add('hidden');
+    exportBtn.classList.add('hidden');
     return;
   }
 
   statsEl.classList.remove('hidden');
+  exportBtn.classList.remove('hidden');
   const stats = calcLapStats(laps);
   const pad   = n => String(n).padStart(2, '0');
   document.getElementById('stat-laps').textContent = stats.count;
@@ -232,15 +260,17 @@ function renderLaps() {
   let html = '<div class="lap-history-title">Lap History</div>';
   [...laps].reverse().forEach(lap => {
     const h = Math.floor(lap.timeMin / 60), m = lap.timeMin % 60;
-    const timeStr  = h > 0 ? `${h}h${pad(m)}m` : `${m}m`;
-    const givenStr = lap.given.map(id => GIVEN_LABELS[id] || id).join(', ') || '—';
-    const retStr   = lap.returned.map(id => RET_LABELS[id] || id).join(', ') || '—';
+    const timeStr    = h > 0 ? `${h}h${pad(m)}m` : `${m}m`;
+    const givenStr   = lap.given.map(id => GIVEN_LABELS[id] || id).join(', ') || '—';
+    const retStr     = lap.returned.map(id => RET_LABELS[id] || id).join(', ') || '—';
+    const signals    = Array.isArray(lap.signal) ? lap.signal : (lap.signal ? [lap.signal] : []);
+    const signalStr  = signals.join(' · ');
     html += `<div class="lap-row">
       <div class="lap-num">${lap.num}</div>
       <div class="lap-details">
         <div class="lap-time-row">
           <div class="lap-time">${timeStr}</div>
-          ${lap.signal ? `<div class="lap-signal">${lap.signal}</div>` : ''}
+          ${signalStr ? `<div class="lap-signal">${signalStr}</div>` : ''}
         </div>
         <div class="lap-meta">Given: ${givenStr}</div>
         <div class="lap-meta">Returned: ${retStr}</div>
@@ -253,6 +283,26 @@ function renderLaps() {
   container.innerHTML = html;
 }
 
+// ── Export ────────────────────────────────────────────────────────────────────
+
+function exportData() {
+  const json = exportRaceData(laps, getRaceNotes());
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = '9to5_jmr_2026_laps.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Markdown render (Plan + Bible tabs) ───────────────────────────────────────
+
+function renderMarkdown(md, el) {
+  el.innerHTML = marked.parse(md);
+  el.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
+}
+
 // ── Expose globals for inline onclick handlers ────────────────────────────────
 
 Object.assign(window, {
@@ -263,11 +313,13 @@ Object.assign(window, {
   closeLapForm,
   saveLap,
   deleteLap,
-  selectSignal,
+  toggleSignal,
   toggleCheck,
   adjustTime,
   startRaceNow,
+  stopRace,
   resetRace,
+  exportData,
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -278,3 +330,16 @@ renderLaps();
 renderLapTimerUI();
 setInterval(tickClock, 1000);
 tickClock();
+
+renderMarkdown(racePlanMd,  document.getElementById('plan-content'));
+renderMarkdown(raceBibleMd, document.getElementById('bible-content'));
+
+document.getElementById('race-notes').value = getRaceNotes();
+document.getElementById('race-notes').addEventListener('input', e => saveRaceNotes(e.target.value));
+
+['checklist', 'plan', 'bible'].forEach(tab => {
+  const el = document.getElementById(`notes-${tab}`);
+  if (!el) return;
+  el.value = getTabNotes(tab);
+  el.addEventListener('input', e => saveTabNotes(tab, e.target.value));
+});

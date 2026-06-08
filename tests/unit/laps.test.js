@@ -52,7 +52,7 @@ describe('GIVEN_LABELS', () => {
 
 describe('RET_LABELS', () => {
   it('has entries for expected return states', () => {
-    expect(RET_LABELS['lg-empty']).toBe('Lg empty');
+    expect(RET_LABELS['empty']).toBe('Empty');
     expect(RET_LABELS['kept']).toBe('Kept');
     expect(RET_LABELS['nothing']).toBe('Nothing');
   });

@@ -2,6 +2,8 @@ const LS_LAPS    = '9to5_2026_laps';
 const LS_CL      = '9to5_2026_checklist';
 const LS_LAPST   = '9to5_2026_lapstart';
 const LS_MSTART  = '9to5_2026_manual_start';
+const LS_STOPPED = '9to5_2026_race_stopped';
+const LS_RNOTES  = '9to5_2026_race_notes';
 
 export const getLaps             = () => JSON.parse(localStorage.getItem(LS_LAPS) || '[]');
 export const saveLaps            = laps => localStorage.setItem(LS_LAPS, JSON.stringify(laps));
@@ -13,3 +15,10 @@ export const setLapStartEpoch    = ms => localStorage.setItem(LS_LAPST, ms.toStr
 export const getRawManualStart   = () => localStorage.getItem(LS_MSTART);
 export const setManualStartEpoch = ms => localStorage.setItem(LS_MSTART, ms.toString());
 export const clearManualStart    = () => localStorage.removeItem(LS_MSTART);
+export const getRaceStopped      = () => localStorage.getItem(LS_STOPPED);
+export const setRaceStopped      = () => localStorage.setItem(LS_STOPPED, Date.now().toString());
+export const clearRaceStopped    = () => localStorage.removeItem(LS_STOPPED);
+export const getRaceNotes        = () => localStorage.getItem(LS_RNOTES) || '';
+export const saveRaceNotes       = s => localStorage.setItem(LS_RNOTES, s);
+export const getTabNotes         = tab => localStorage.getItem(`9to5_2026_notes_${tab}`) || '';
+export const saveTabNotes        = (tab, s) => localStorage.setItem(`9to5_2026_notes_${tab}`, s);
